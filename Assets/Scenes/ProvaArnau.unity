@@ -1570,7 +1570,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e57a2ec3027c3fd478d39f43692522c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cursorSpeed: 8
+  cursorScreenSpeed: 800
   navMeshSampleRadius: 0.1
   geometryMask:
     serializedVersion: 2
@@ -1804,7 +1804,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60.000004
+  field of view: 60
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -1830,8 +1830,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 606544784}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.27984518, y: -0.3647056, z: 0.11591566, w: 0.88047725}
-  m_LocalPosition: {x: 0, y: 10, z: -10}
+  m_LocalRotation: {x: 0.23937817, y: 0.00000002893587, z: -0.000000007134027, w: 0.9709264}
+  m_LocalPosition: {x: -11, y: 4.503529, z: -4.7685847}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2443,6 +2443,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerStateMachine: {fileID: 5590952}
+  orthoCursor: {fileID: 182958785}
   brain: {fileID: 606544789}
   perspectiveCam: {fileID: 952478886}
   orthoCam: {fileID: 1345801137}
@@ -3143,7 +3144,7 @@ Transform:
   m_GameObject: {fileID: 1663423156}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -21, y: 0, z: 0}
+  m_LocalPosition: {x: -20, y: 0, z: 3}
   m_LocalScale: {x: 10, y: 1, z: 20}
   m_ConstrainProportionsScale: 0
   m_Children: []

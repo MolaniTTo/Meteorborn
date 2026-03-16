@@ -120,8 +120,7 @@ public class PlayerStateMachine : MonoBehaviour
         {
             if (hit.collider.CompareTag("Interactable"))
             {
-                Debug.Log($"Interactuant amb: {hit.collider.gameObject.name}");
-                //Aqui cridarem al component Interactuable quan el tinguem implementat
+                GameManager.instance.HandleInteraction(hit.collider.gameObject);
             }
             else
             {
