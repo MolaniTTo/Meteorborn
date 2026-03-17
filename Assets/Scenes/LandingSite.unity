@@ -330,6 +330,7 @@ GameObject:
   - component: {fileID: 450959820}
   - component: {fileID: 450959819}
   - component: {fileID: 450959818}
+  - component: {fileID: 450959821}
   m_Layer: 0
   m_Name: Meteorito
   m_TagString: Untagged
@@ -382,13 +383,29 @@ Transform:
   m_GameObject: {fileID: 450959817}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 152.01396, y: 0.211, z: 154.56}
+  m_LocalPosition: {x: 150.91, y: 0.2, z: 158.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1659678226}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &450959821
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450959817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8855eadfa51eb140b86f8b28e680144, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cosasQueDecir:
+  - Fiesta Fiesta
+  - Ajuda ajuda
+  - Raul Raul
 --- !u!1 &621004207
 GameObject:
   m_ObjectHideFlags: 0
@@ -707,12 +724,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 914568429}
+  - component: {fileID: 914568430}
   - component: {fileID: 914568428}
   - component: {fileID: 914568427}
   - component: {fileID: 914568426}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -835,6 +853,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 16.276, y: 0, z: 0}
+--- !u!114 &914568430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 914568425}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b049e5ba9b220d746a5ae22499ac44b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shootAction:
+    m_Name: Shoot
+    m_Type: 1
+    m_ExpectedControlType: Button
+    m_Id: 657ccc9c-ddaa-4b1a-acbf-f1befb653820
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
 --- !u!1 &1659678225
 GameObject:
   m_ObjectHideFlags: 0
