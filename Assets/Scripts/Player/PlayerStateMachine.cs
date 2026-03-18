@@ -58,7 +58,7 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private float arrivalDistance = 0.3f;  // Distancia per considerar que el player ha arribat al desti
 
     //NavMesh Link Traversal
-    private bool traversingLink = false;
+    [SerializeField] private bool traversingLink = false;
 
 
 
@@ -277,11 +277,14 @@ public class PlayerStateMachine : MonoBehaviour
         OffMeshLinkData data = agent.currentOffMeshLinkData;
         Vector3 finalDestination = agent.destination;
 
-        float linkDistance = Vector3.Distance(data.startPos, data.endPos);
-        float traverseTime = linkDistance / linkSpeed;
-        float speed = linkDistance / traverseTime;
+        float realDistance = Vector3.Distance(data.startPos, data.endPos);
 
-        agent.speed = speed;
+        // Tots els links mesuren 1 unitat aparent, calculem la velocitat per recorrer
+        // la distancia real 3D en el mateix temps que tardaria en caminar 1 unitat normal
+        float expectedTime = 1.5f / moveSpeed;
+        float requiredSpeed = realDistance / expectedTime;
+
+        agent.speed = requiredSpeed;
         agent.autoTraverseOffMeshLink = true;
 
         while (agent.isOnOffMeshLink)
@@ -294,7 +297,6 @@ public class PlayerStateMachine : MonoBehaviour
 
         traversingLink = false;
     }
-
 
     //------------------------ CALLBACKS DE INPUTS ------------------------//
 
