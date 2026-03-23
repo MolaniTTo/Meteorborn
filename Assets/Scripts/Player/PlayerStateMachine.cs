@@ -281,7 +281,7 @@ public class PlayerStateMachine : MonoBehaviour
 
         // Tots els links mesuren 1 unitat aparent, calculem la velocitat per recorrer
         // la distancia real 3D en el mateix temps que tardaria en caminar 1 unitat normal
-        float expectedTime = 1.5f / moveSpeed;
+        float expectedTime = 2f / moveSpeed;
         float requiredSpeed = realDistance / expectedTime;
 
         agent.speed = requiredSpeed;
