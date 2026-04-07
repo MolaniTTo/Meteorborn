@@ -199,6 +199,24 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CursorMode"",
+                    ""type"": ""Value"",
+                    ""id"": ""d7789388-baa1-4e04-aa74-720ade68acc1"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""LaunchMinion"",
+                    ""type"": ""Button"",
+                    ""id"": ""c77899d0-008f-4cd4-95e6-6c6d51dfff49"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -341,17 +359,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Gamepad"",
-                    ""action"": ""Look"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""8c8e490b-c610-4785-884f-f04217b23ca4"",
-                    ""path"": ""<Pointer>/delta"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Keyboard&Mouse;Touch"",
                     ""action"": ""Look"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -628,6 +635,28 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Confirm"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b8cc5946-e85b-4245-b277-eed11cbe74da"",
+                    ""path"": ""<Gamepad>/leftTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CursorMode"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d0dc9e66-e7e2-453d-8608-3ae486aa5a00"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LaunchMinion"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1227,6 +1256,8 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_SwitchCamera = m_Player.FindAction("SwitchCamera", throwIfNotFound: true);
         m_Player_CycleCameraPosition = m_Player.FindAction("CycleCameraPosition", throwIfNotFound: true);
         m_Player_Confirm = m_Player.FindAction("Confirm", throwIfNotFound: true);
+        m_Player_CursorMode = m_Player.FindAction("CursorMode", throwIfNotFound: true);
+        m_Player_LaunchMinion = m_Player.FindAction("LaunchMinion", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1332,6 +1363,8 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_SwitchCamera;
     private readonly InputAction m_Player_CycleCameraPosition;
     private readonly InputAction m_Player_Confirm;
+    private readonly InputAction m_Player_CursorMode;
+    private readonly InputAction m_Player_LaunchMinion;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -1391,6 +1424,14 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Confirm".
         /// </summary>
         public InputAction @Confirm => m_Wrapper.m_Player_Confirm;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/CursorMode".
+        /// </summary>
+        public InputAction @CursorMode => m_Wrapper.m_Player_CursorMode;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/LaunchMinion".
+        /// </summary>
+        public InputAction @LaunchMinion => m_Wrapper.m_Player_LaunchMinion;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1453,6 +1494,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Confirm.started += instance.OnConfirm;
             @Confirm.performed += instance.OnConfirm;
             @Confirm.canceled += instance.OnConfirm;
+            @CursorMode.started += instance.OnCursorMode;
+            @CursorMode.performed += instance.OnCursorMode;
+            @CursorMode.canceled += instance.OnCursorMode;
+            @LaunchMinion.started += instance.OnLaunchMinion;
+            @LaunchMinion.performed += instance.OnLaunchMinion;
+            @LaunchMinion.canceled += instance.OnLaunchMinion;
         }
 
         /// <summary>
@@ -1500,6 +1547,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Confirm.started -= instance.OnConfirm;
             @Confirm.performed -= instance.OnConfirm;
             @Confirm.canceled -= instance.OnConfirm;
+            @CursorMode.started -= instance.OnCursorMode;
+            @CursorMode.performed -= instance.OnCursorMode;
+            @CursorMode.canceled -= instance.OnCursorMode;
+            @LaunchMinion.started -= instance.OnLaunchMinion;
+            @LaunchMinion.performed -= instance.OnLaunchMinion;
+            @LaunchMinion.canceled -= instance.OnLaunchMinion;
         }
 
         /// <summary>
@@ -1884,6 +1937,20 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnConfirm(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CursorMode" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCursorMode(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "LaunchMinion" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnLaunchMinion(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.
