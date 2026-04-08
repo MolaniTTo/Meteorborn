@@ -49,11 +49,23 @@ public class EnemicController : MonoBehaviour
                 {
                     Debug.Log("Perseguint");
                     MoveToMinion();
+                    if (Vector3.Distance(perseguint.transform.position, transform.position) < 1.5f)
+                    {
+                        if (MoreThan2Minions())
+                        {
+                            Debug.Log("Reduir vida grup de minions");
+                        }
+                        else
+                        {
+                            Debug.Log("Reduir vida minion");
+                        }
+                    }
                 }
                 else
                 {
                     if (minionDintreRadi != null) //Hi ha un minion dintre del meu radi? 
                     {
+                        //Esta el minion asignat a un altre enemic?
                         perseguint = minionDintreRadi;
                         minionDintreRadi = null;
                     }
@@ -66,9 +78,6 @@ public class EnemicController : MonoBehaviour
                 }
             }
         }
-
-
-        
     }
 
     void MoveToMinion()
@@ -106,6 +115,28 @@ public class EnemicController : MonoBehaviour
         if (NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, guardDistance, NavMesh.AllAreas))
         {
             nextPoint = hit.position;
+        }
+    }
+
+    bool MoreThan2Minions() {
+        Collider[] objetos = Physics.OverlapSphere(transform.position, 3);
+
+        int contador = 0;
+
+        foreach (Collider col in objetos)
+        {
+            if (col.CompareTag("minion"))
+            {
+                contador++;
+            }
+        }
+
+        if (contador > 1) {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
