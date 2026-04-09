@@ -4,7 +4,7 @@ using UnityEngine.AI;
 public class EnemicController : MonoBehaviour
 {
     [SerializeField] Transform guardPoint;
-    [SerializeField] float speed = 2f;
+    [SerializeField] private float speed = 0f;
     [SerializeField] float guardDistance = 6f;
 
     public float energia = 100f;
@@ -15,16 +15,24 @@ public class EnemicController : MonoBehaviour
 
     public NavMeshAgent agent;
 
+    private Animator animator;
+
 
     void Start()
     {
         Invoke("GenerarPoint", 10f);
         agent = GetComponent<NavMeshAgent>();
         GenerarPoint();
+
+        animator = gameObject.GetComponentInChildren<Animator>();
     }
 
     void Update()
     {
+        //Pasar parametres al Animator
+        speed = Mathf.Abs(agent.velocity[0] + agent.velocity[1] + agent.velocity[2]);
+        animator.SetFloat("speed", speed);
+
         //Arbre de comportament
         if ( Vector3.Distance(transform.position, guardPoint.position) > guardDistance) //Esta lluny de la font?
         {
@@ -58,6 +66,7 @@ public class EnemicController : MonoBehaviour
                         else
                         {
                             Debug.Log("Reduir vida minion");
+                            animator.Play("MeleAttack");
                         }
                     }
                 }
