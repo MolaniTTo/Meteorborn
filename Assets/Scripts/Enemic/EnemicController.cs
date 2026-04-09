@@ -32,6 +32,7 @@ public class EnemicController : MonoBehaviour
         //Pasar parametres al Animator
         speed = Mathf.Abs(agent.velocity[0] + agent.velocity[1] + agent.velocity[2]);
         animator.SetFloat("speed", speed);
+        animator.SetBool("attack", false);
 
         //Arbre de comportament
         if ( Vector3.Distance(transform.position, guardPoint.position) > guardDistance) //Esta lluny de la font?
@@ -66,7 +67,7 @@ public class EnemicController : MonoBehaviour
                         else
                         {
                             Debug.Log("Reduir vida minion");
-                            animator.Play("MeleAttack");
+                            animator.SetBool("attack", true);
                         }
                     }
                 }
