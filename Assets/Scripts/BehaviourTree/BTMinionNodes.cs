@@ -1,104 +1,123 @@
 ﻿// ═══════════════════════════════════════════════════════════════════════════
 //  BEHAVIOUR TREE NODES — MINION
-//  Cada node és un ScriptableObject que es crea des de Assets > BehaviourTree
 // ═══════════════════════════════════════════════════════════════════════════
 
 using UnityEngine;
 
 // ── 1. CASI MORT (Prioritat màxima) ─────────────────────────────────────────
-// Comprova si l'energia és 0 i gestiona el countdown de 15 segons.
-// Si expira sense ser reactivat → torna al spawn desactivat.
+// El minion cau on estava. Vigila si l'enemic mor en 15s:
+//   → Enemic mort en temps   : entra en Debilitat
+//   → Temps esgotat sense mort: PopToSpawn() → Desactivat al spawnpoint
 
 [CreateAssetMenu(fileName = "BTCasiMort", menuName = "BehaviourTree/Minion/CasiMort")]
 public class BTCasiMort : BTNode
 {
     public override bool Execute(MinionAI minion)
     {
-        if (minion.energy > 0f) return false; // no és casi mort
-        if (minion.currentState == MinionAI.MinionState.Debilitat) return false; // debilitat té la seva pròpia branca
+        // Condició d'entrada: energia a 0 i NO estar ja en Debilitat
+        if (minion.energy > 0f) return false;
+        if (minion.currentState == MinionAI.MinionState.Debilitat) return false;
 
-        // Entra en estat CasiMort si no hi era
+        // Primera vegada que entra en CasiMort
         if (minion.currentState != MinionAI.MinionState.CasiMort)
         {
             minion.ChangeState(MinionAI.MinionState.CasiMort);
             minion.nearDeathTimer = 0f;
             minion.nearDeathExpired = false;
-            minion.agent.enabled = false; // queda parat
-            if (minion.animator != null)
-            {
-                minion.animator.SetTrigger("CasiMort");
-            }
+
+            // Guarda l'enemic que estava atacant per vigilar-lo
+            minion.watchedEnemy = minion.attackTarget;
+            minion.attackTarget = null;
+
+            minion.agent.enabled = false; // queda al terra
+            if (minion.animator != null) minion.animator.SetTrigger("CasiMort");
         }
 
-        // Compta el temps
-        if (!minion.nearDeathExpired)
+        if (minion.nearDeathExpired) return true; // ja s'ha disparat el pop, espera destrucció
+
+        // ── Cas A: l'enemic ha mort mentre el minion estava a terra ──────────
+        if (minion.watchedEnemy != null)
         {
-            minion.nearDeathTimer += Time.deltaTime;
-            if (minion.nearDeathTimer >= minion.nearDeathDuration)
+            EnemyHealth eh = minion.watchedEnemy.GetComponent<EnemyHealth>();
+            if (eh == null || eh.IsDead())
             {
-                // Temps exhaurit → torna al spawn
-                minion.nearDeathExpired = true;
-                minion.StartCoroutine(minion.ReturnToSpawnAndDeactivate());
+                // L'enemic ha mort → entra en Debilitat com els normals
+                minion.watchedEnemy = null;
+                minion.energy = 0f; // segueix amb 0 energia (Debilitat no necessita energia)
+                minion.ChangeState(MinionAI.MinionState.Debilitat);
+                if (minion.animator != null) minion.animator.SetTrigger("Debilitat");
+                return true;
             }
         }
+        else
+        {
+            // No hi havia enemic vigilat (va caure per altra causa) → directament Debilitat
+            minion.ChangeState(MinionAI.MinionState.Debilitat);
+            if (minion.animator != null) minion.animator.SetTrigger("Debilitat");
+            return true;
+        }
 
-        return true; //mentre estigui en CasiMort, aquest node té el control
+        // ── Cas B: countdown de 15 segons ────────────────────────────────────
+        minion.nearDeathTimer += Time.deltaTime;
+        if (minion.nearDeathTimer >= minion.nearDeathDuration)
+        {
+            minion.nearDeathExpired = true;
+            minion.PopToSpawn(); // teleport al spawn en Desactivat
+        }
+
+        return true;
     }
 }
 
 
 // ── 2. ATACAR ────────────────────────────────────────────────────────────────
-// Persegueix l'objectiu i absorbeix energia. Quan l'enemic mor → Debilitat.
 
 [CreateAssetMenu(fileName = "BTAtacar", menuName = "BehaviourTree/Minion/Atacar")]
 public class BTAtacar : BTNode
 {
     public override bool Execute(MinionAI minion)
     {
-        if (minion.currentState != MinionAI.MinionState.Atacar) return false;
-        if (minion.attackTarget == null)
+        if (minion.currentState != MinionAI.MinionState.Atacar) return false; //Si no esta en estat d'atacar, no fa res i retorna false per passar al següent node del selector
+
+        if (minion.attackTarget == null) //Si no te objectiu d'atac, canvia a estat Activat, se suposa que si estava atacant s'ha mort l'enemic
         {
-            // Objectiu perdut → torna a Activat
             minion.ChangeState(MinionAI.MinionState.Activat);
             return false;
         }
 
-        float dist = Vector3.Distance(minion.transform.position, minion.attackTarget.position);
+        float dist = Vector3.Distance(minion.transform.position, minion.attackTarget.position); //Calcula la distancia al objectiu d'atac
 
-        if (dist > minion.attackRange)
+        if (dist > minion.attackRange) //si la distanciancia al objectiu d'atac es major que el rang d'atac, es mou cap a ell
         {
-            // Persegueix
             minion.agent.isStopped = false;
             minion.agent.SetDestination(minion.attackTarget.position);
             if (minion.animator != null) minion.animator.SetBool("IsMoving", true);
         }
-        else
+        else //si esta dins del rang d'atac, atura el minion i comença a atacar (drain d'energia i dany a l'enemic)
         {
-            // Ataca: absorbeix energia de l'enemic
             minion.agent.isStopped = true;
+            if (minion.animator != null) minion.animator.SetBool("IsMoving", false);
 
-            // Busca un component d'energia a l'enemic (adapta-ho al teu sistema)
             EnemyHealth enemyHealth = minion.attackTarget.GetComponent<EnemyHealth>();
             if (enemyHealth != null)
             {
                 float drain = minion.energyDrainPerSecond * Time.deltaTime;
                 enemyHealth.TakeDamage(drain);
-                minion.energy = Mathf.Min(minion.maxEnergy, minion.energy + drain); // absorbeix
+                minion.energy = Mathf.Min(minion.maxEnergy, minion.energy + drain);
 
                 if (minion.animator != null) minion.animator.SetTrigger("Attack");
 
-                // Enemic mort?
                 if (enemyHealth.IsDead())
                 {
+                    // L'enemic ha mort → Debilitat (esgotat per la lluita)
                     minion.attackTarget = null;
-                    minion.energy = 0f; // queda esgotat
+                    minion.energy = 0f;
                     minion.ChangeState(MinionAI.MinionState.Debilitat);
                     if (minion.animator != null) minion.animator.SetTrigger("Debilitat");
                 }
             }
             else
             {
-                // L'enemic no té component d'energia → combat simple
                 minion.attackTarget = null;
                 minion.energy = 0f;
                 minion.ChangeState(MinionAI.MinionState.Debilitat);
@@ -111,7 +130,7 @@ public class BTAtacar : BTNode
 
 
 // ── 3. DEBILITAT ─────────────────────────────────────────────────────────────
-// Post-combat. Queda parat fins que el jugador el reactiva amb partícules.
+// Queda parat fins que el jugador gasta partícules per reactivar-lo.
 
 [CreateAssetMenu(fileName = "BTDebilitat", menuName = "BehaviourTree/Minion/Debilitat")]
 public class BTDebilitat : BTNode
@@ -119,17 +138,14 @@ public class BTDebilitat : BTNode
     public override bool Execute(MinionAI minion)
     {
         if (minion.currentState != MinionAI.MinionState.Debilitat) return false;
-
-        // Queda parat esperant reactivació (la reactivació la fa MinionManager)
         minion.agent.isStopped = true;
-
+        if (minion.animator != null) minion.animator.SetBool("IsMoving", false);
         return true;
     }
 }
 
 
 // ── 4. ACTIVAT ───────────────────────────────────────────────────────────────
-// Segueix el jugador en idle. La lògica de seguiment és a MinionAI (coroutine).
 
 [CreateAssetMenu(fileName = "BTActivat", menuName = "BehaviourTree/Minion/Activat")]
 public class BTActivat : BTNode
@@ -137,22 +153,15 @@ public class BTActivat : BTNode
     public override bool Execute(MinionAI minion)
     {
         if (minion.currentState != MinionAI.MinionState.Activat) return false;
-
         minion.agent.isStopped = false;
-
         if (minion.animator != null)
-        {
-            bool isMoving = minion.agent.velocity.sqrMagnitude > 0.1f;
-            minion.animator.SetBool("IsMoving", isMoving);
-        }
-
+            minion.animator.SetBool("IsMoving", minion.agent.velocity.sqrMagnitude > 0.1f);
         return true;
     }
 }
 
 
 // ── 5. TREBALLANT ────────────────────────────────────────────────────────────
-// S'apropa a l'objecte, l'agafa amb els altres minions i desapareix en núvol.
 
 [CreateAssetMenu(fileName = "BTTreballant", menuName = "BehaviourTree/Minion/Treballant")]
 public class BTTreballant : BTNode
@@ -160,28 +169,15 @@ public class BTTreballant : BTNode
     public override bool Execute(MinionAI minion)
     {
         if (minion.currentState != MinionAI.MinionState.Treballant) return false;
-
-        if (minion.assignedObject == null)
-        {
-            minion.ChangeState(MinionAI.MinionState.Activat);
-            return false;
-        }
-
-        // La lògica de portar l'objecte la gestiona CarryObject + MinionManager
-        // Aquest node simplement manté l'estat actiu i mou cap a la posició assignada
+        if (minion.assignedObject == null) { minion.ChangeState(MinionAI.MinionState.Activat); return false; }
         if (minion.animator != null)
-        {
-            bool isMoving = minion.agent.velocity.sqrMagnitude > 0.1f;
-            minion.animator.SetBool("IsMoving", isMoving);
-        }
-
+            minion.animator.SetBool("IsMoving", minion.agent.velocity.sqrMagnitude > 0.1f);
         return true;
     }
 }
 
 
 // ── 6. DESACTIVAT (Fallback) ─────────────────────────────────────────────────
-// Punt fix. Si el jugador s'acosta, mira amb curiositat.
 
 [CreateAssetMenu(fileName = "BTDesactivat", menuName = "BehaviourTree/Minion/Desactivat")]
 public class BTDesactivat : BTNode
@@ -192,28 +188,24 @@ public class BTDesactivat : BTNode
 
         minion.agent.isStopped = true;
 
-        // Curiositat: si el jugador s'acosta, mira cap a ell
         if (minion.playerTransform != null)
         {
             float dist = Vector3.Distance(minion.transform.position, minion.playerTransform.position);
-            if (dist < minion.curiosityRadius)
+            bool curious = dist < minion.curiosityRadius;
+
+            if (curious)
             {
                 Vector3 dir = (minion.playerTransform.position - minion.transform.position);
                 dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f)
-                {
-                    Quaternion target = Quaternion.LookRotation(dir);
                     minion.transform.rotation = Quaternion.Slerp(
-                        minion.transform.rotation, target, Time.deltaTime * 3f);
-                }
-                if (minion.animator != null)
-                    minion.animator.SetBool("IsCurious", true);
+                        minion.transform.rotation,
+                        Quaternion.LookRotation(dir),
+                        Time.deltaTime * 3f);
             }
-            else
-            {
-                if (minion.animator != null)
-                    minion.animator.SetBool("IsCurious", false);
-            }
+
+            if (minion.animator != null)
+                minion.animator.SetBool("IsCurious", curious);
         }
 
         return true;

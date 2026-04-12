@@ -29,7 +29,6 @@ public class CarryObject : MonoBehaviour
         if (agent != null) agent.enabled = false;
     }
 
-    /// <summary>Assigna un minion a l'objecte. Quan n'hi ha prou, comença a moure's.</summary>
     public void AssignMinion(MinionAI minion)
     {
         if (isDelivered) return;
@@ -93,12 +92,13 @@ public class CarryObject : MonoBehaviour
         {
             minion.transform.SetParent(null);
             // Aquí pots afegir un efecte de fum i Destroy
-            Destroy(minion.gameObject, 0.1f);
+            //Destroy(minion.gameObject, 0.1f);
+            minion.PopToSpawn();
         }
         assignedMinions.Clear();
 
         // Aquí pots afegir la lògica de captura (DOTween, efectes, etc.)
-        Destroy(gameObject, 0.5f);
+        //Destroy(gameObject, 0.5f);
     }
 
     public bool IsDelivered => isDelivered;

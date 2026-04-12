@@ -60,6 +60,11 @@ public class PlayerStateMachine : MonoBehaviour
     //NavMesh Link Traversal
     [SerializeField] private bool traversingLink = false;
 
+    //Light Particles
+    [SerializeField] private int MaxParticles;
+    [SerializeField] private int numberOfParticles;
+
+
 
 
     private void Awake()

@@ -1,29 +1,35 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.AI;
 
 public class MinionManager : MonoBehaviour
 {
-    public static MinionManager Instance { get; private set; } // Singleton per accés global des de MinionCursor i altres scripts
-
-    [Header("Llistes de Minions")]
-    private List<MinionAI> allMinions = new List<MinionAI>();
-    private List<MinionAI> activeMinions = new List<MinionAI>(); // estat Activat
+    public static MinionManager Instance { get; private set; }
 
     [Header("Cursor")]
-    public MinionCursor cursor; // assigna des de l'inspector
+    public MinionCursor cursor;
 
-    [Header("Activació per esfera (LT)")]
-    public float activationRadius = 2f; // radi del cursor per activar minions
+    [Header("Costs de partícules")]
+    [Tooltip("Cost per activar un minion desactivat")]
+    public int activationCost = 3;
+    [Tooltip("Cost per reactivar un minion en estat Debilitat")]
+    public int weaknessCost = 5;
 
-    [Header("Llançament (RT)")]
+    [Header("Radi d'activació del cursor")]
+    public float activationRadius = 2f;
+    public float reactivationRadius = 2f;
+
+    [Header("Llançament")]
     public float launchArcHeight = 3f;
     public float launchDuration = 0.6f;
 
-    [Header("Reactivació (Debilitat / CasiMort)")]
-    public float reactivationRadius = 2f;
+    // ── Llistes internes ──────────────────────────────────────────────────────
+    [SerializeField] private List<MinionAI> allMinions = new List<MinionAI>();
+    [SerializeField] private List<MinionAI> activeMinions = new List<MinionAI>();
+
+    // ── Highlight: minion sota el cursor pendent de confirmar ─────────────────
+    private MinionAI pendingMinion = null;   // el que el cursor té a sobre
+    private bool pendingIsReactivation = false;
 
     void Awake()
     {
@@ -31,35 +37,125 @@ public class MinionManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    void Start()
+    void Update()
     {
-        // Recull tots els minions de l'escena
-        allMinions = FindObjectsOfType<MinionAI>().ToList();
+        if (cursor == null || !cursor.IsActive)
+        {
+            ClearPending();
+            return;
+        }
+
+        UpdatePendingHighlight(cursor.WorldPosition);
     }
 
-    // ── Cridades des de MinionCursor ──────────────────────────────────────────
-    //Quan LT es mantingut, activa els minions desactivats a prop del cursor.
+    // ────────────────────────────────────────────────────────────────────────
+    // Registre de minions (cridat pels MinionSpawners)
+    // ────────────────────────────────────────────────────────────────────────
 
-    public void TryActivateMinionsAtCursor(Vector3 cursorWorldPos)
+    public void RegisterMinion(MinionAI minion)
     {
+        if (!allMinions.Contains(minion))
+            allMinions.Add(minion);
+    }
+
+    public void UnregisterMinion(MinionAI minion)
+    {
+        allMinions.Remove(minion);
+        activeMinions.Remove(minion);
+        if (pendingMinion == minion) ClearPending();
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Highlight: cada frame que el cursor passa per sobre d'un minion
+    // es marca com a "pendent" però NO es cobra res fins a RT
+    // ────────────────────────────────────────────────────────────────────────
+
+    private void UpdatePendingHighlight(Vector3 cursorPos)
+    {
+        MinionAI closest = null;
+        float closestDist = float.MaxValue;
+        bool isReactivation = false;
+
         foreach (MinionAI minion in allMinions)
         {
-            if (minion.currentState != MinionAI.MinionState.Desactivat) continue;
-            float dist = Vector3.Distance(minion.transform.position, cursorWorldPos);
-            if (dist <= activationRadius)
+            float dist = Vector3.Distance(minion.transform.position, cursorPos);
+
+            if (minion.currentState == MinionAI.MinionState.Desactivat && dist <= activationRadius)
             {
-                minion.Activate();
-                RegisterActive(minion);
+                if (dist < closestDist) { closestDist = dist; closest = minion; isReactivation = false; }
             }
+            else if (minion.currentState == MinionAI.MinionState.Debilitat && dist <= reactivationRadius)
+            {
+                if (dist < closestDist) { closestDist = dist; closest = minion; isReactivation = true; }
+            }
+        }
+
+        // Neteja el highlight anterior si ha canviat
+        if (pendingMinion != closest)
+        {
+            if (pendingMinion != null) pendingMinion.isHighlighted = false;
+            pendingMinion = closest;
+            pendingIsReactivation = isReactivation;
+            if (pendingMinion != null) pendingMinion.isHighlighted = true;
         }
     }
 
-    //Quan RT es premut, llança el minion actiu mes proper a la posicio del cursor de manera parabolica.
+    private void ClearPending()
+    {
+        if (pendingMinion != null) pendingMinion.isHighlighted = false;
+        pendingMinion = null;
+        pendingIsReactivation = false;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // RT confirmat: activa o reactiva el minion pendent si hi ha prou partícules
+    // Cridat des de MinionCursor quan RT és premut
+    // ────────────────────────────────────────────────────────────────────────
+
+    public void ConfirmCursorAction(Vector3 cursorWorldPos, Vector3 playerPos)
+    {
+        // Prioritat 1: hi ha un minion pendent sota el cursor → activar/reactivar
+        if (pendingMinion != null)
+        {
+            int cost = pendingIsReactivation ? weaknessCost : activationCost;
+
+            if (!PlayerParticles.Instance.HasEnough(cost))
+            {
+                Debug.Log($"[Minions] No hi ha prou partícules! Calen {cost}, tens {PlayerParticles.Instance.Current}");
+                return;
+            }
+
+            PlayerParticles.Instance.Spend(cost);
+
+            if (pendingIsReactivation) //Si esta en debilitat, el reactiva, sino el activa normalment
+            {
+                pendingMinion.ReactivateFromWeakness();
+                RegisterActive(pendingMinion);
+                Debug.Log($"[Minions] Minion reactivat des de Debilitat. Cost: {cost}p. Queden: {PlayerParticles.Instance.Current}p");
+            }
+            else
+            {
+                pendingMinion.Activate();
+                RegisterActive(pendingMinion);
+                Debug.Log($"[Minions] Minion activat. Cost: {cost}p. Queden: {PlayerParticles.Instance.Current}p");
+            }
+
+            ClearPending();
+            return;
+        }
+
+        // Prioritat 2: no hi ha minion pendent → llança un minion actiu cap al cursor
+        LaunchMinionToCursor(cursorWorldPos, playerPos);
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Llançament
+    // ────────────────────────────────────────────────────────────────────────
+
     public void LaunchMinionToCursor(Vector3 cursorWorldPos, Vector3 playerPos)
     {
         if (activeMinions.Count == 0) return;
 
-        // Agafa el minion actiu més proper al jugador
         MinionAI toThrow = activeMinions
             .OrderBy(m => Vector3.Distance(m.transform.position, playerPos))
             .First();
@@ -68,45 +164,13 @@ public class MinionManager : MonoBehaviour
         toThrow.LaunchTo(cursorWorldPos, launchArcHeight, launchDuration);
     }
 
-    //Reactiva un minion a prop del cursor que estigui en estat Debilitat o CasiMort.
-    public void TryReactivateAtCursor(Vector3 cursorWorldPos)
-    {
-        foreach (MinionAI minion in allMinions)
-        {
-            float dist = Vector3.Distance(minion.transform.position, cursorWorldPos);
-            if (dist > reactivationRadius) continue;
-
-            if (minion.currentState == MinionAI.MinionState.Debilitat)
-            {
-                minion.ReactivateFromWeakness();
-                RegisterActive(minion);
-            }
-            else if (minion.currentState == MinionAI.MinionState.CasiMort
-                     && !minion.nearDeathExpired)
-            {
-                // Comprova si hi ha un enemic a prop per tornar directament a Atacar
-                Collider[] hits = Physics.OverlapSphere(cursorWorldPos, 2f);
-                Transform enemy = null;
-                foreach (Collider col in hits)
-                    if (col.CompareTag("Enemy")) { enemy = col.transform; break; }
-
-                if (enemy != null)
-                    minion.ReactivateToAttack(enemy);
-                else
-                {
-                    minion.ReactivateFromWeakness();
-                    RegisterActive(minion);
-                }
-            }
-        }
-    }
-
-    // ── Gestió interna de la llista ───────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
+    // Gestió de llistes
+    // ────────────────────────────────────────────────────────────────────────
 
     public void RegisterActive(MinionAI minion)
     {
-        if (!activeMinions.Contains(minion))
-            activeMinions.Add(minion);
+        if (!activeMinions.Contains(minion)) activeMinions.Add(minion);
     }
 
     public void UnregisterActive(MinionAI minion)
@@ -116,18 +180,18 @@ public class MinionManager : MonoBehaviour
 
     public int ActiveCount => activeMinions.Count;
 
-    // ── Assignació de tasques des de l'exterior ───────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
+    // Assignació externa de tasques
+    // ────────────────────────────────────────────────────────────────────────
 
-    //Assigna l'enemic a atacar al primer minion actiu de la llista.
     public void AssignAttackToFirst(Transform enemy)
     {
         if (activeMinions.Count == 0) return;
-        MinionAI minion = activeMinions[0];
+        MinionAI m = activeMinions[0];
         activeMinions.RemoveAt(0);
-        minion.AssignAttackTarget(enemy);
+        m.AssignAttackTarget(enemy);
     }
 
-    //Assigna el objecte a portar al primer minion actiu de la llista.
     public void AssignCarryObject(CarryObject obj, int count)
     {
         int assigned = 0;
@@ -138,6 +202,4 @@ public class MinionManager : MonoBehaviour
             assigned++;
         }
     }
-
-   
 }
