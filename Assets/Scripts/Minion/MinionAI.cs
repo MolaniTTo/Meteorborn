@@ -12,6 +12,7 @@ public class MinionAI : MonoBehaviour
     [HideInInspector] public NavMeshAgent agent;
     [HideInInspector] public Animator animator;
     [SerializeField] private Transform playerFollow;
+    [SerializeField] private Transform playerThrow;
     public BTNode rootNode;
 
     // ── Spawner ───────────────────────────────────────────────────────────────
@@ -61,9 +62,12 @@ public class MinionAI : MonoBehaviour
 
     void Start()
     {
-        playerTransform = GameObject.FindGameObjectWithTag("PlayerFollow")?.transform;
+        playerTransform = FindFirstObjectByType<PlayerStateMachine>()?.playerFollowPosition;
         if (playerFollow == null && playerTransform != null)
             playerFollow = playerTransform;
+        playerThrow = FindFirstObjectByType<PlayerStateMachine>()?.playerThrowPosition;
+        if (playerThrow == null && playerTransform != null)
+            playerThrow = playerTransform;
     }
 
     void Update()

@@ -8,6 +8,7 @@ public class MinionCursor : MonoBehaviour
     [Header("Referència a la càmera i al player")]
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private Transform playerTransform;
+    [SerializeField] private Transform playerThrow;
 
     [Header("Moviment del cursor")]
     [SerializeField] private float cursorMoveSpeed = 8f;
@@ -23,6 +24,7 @@ public class MinionCursor : MonoBehaviour
 
     // ── Estat intern ──────────────────────────────────────────────────────────
     private bool isCursorActive = false;
+    private bool isOnLockMode = false; //per saber quan esta amb un enemic lockejat
     private Vector3 cursorWorldPosition;
     private Vector3 cursorVelocity;
 
@@ -55,15 +57,25 @@ public class MinionCursor : MonoBehaviour
     void Update()
     {
         bool ltHeld = leftTrigger.ReadValue<float>() > 0.5f;
+        bool hasLockOn = LockOnSystem.Instance != null && LockOnSystem.Instance.IsLockedOn;
 
-        if (ltHeld && !isCursorActive) EnterCursorMode();
-        if (!ltHeld && isCursorActive) ExitCursorMode();
+
+        if (ltHeld && !hasLockOn && !isCursorActive)
+        {
+            EnterCursorMode();
+        }
+
+        else if ((!ltHeld || hasLockOn) && isCursorActive)
+        {
+            ExitCursorMode();
+        }
 
         if (isCursorActive)
         {
             UpdateCursorPosition();
             UpdateLineRenderer();
         }
+
     }
 
     // ── Mode cursor ───────────────────────────────────────────────────────────
@@ -131,8 +143,17 @@ public class MinionCursor : MonoBehaviour
 
     private void OnRightTriggerPerformed(InputAction.CallbackContext ctx)
     {
-        if (!isCursorActive) return;
-        MinionManager.Instance?.ConfirmCursorAction(cursorWorldPosition, playerTransform.position);
+        bool hasLockOn = LockOnSystem.Instance != null && LockOnSystem.Instance.IsLockedOn;
+        if (hasLockOn)
+        {
+            // Envia la posició de l'enemic directament
+            Vector3 enemyPos = LockOnSystem.Instance.Target.position;
+            MinionManager.Instance?.ConfirmCursorAction(enemyPos, playerThrow.position);
+        }
+        else if (isCursorActive)
+        {
+            MinionManager.Instance?.ConfirmCursorAction(cursorWorldPosition, playerThrow.position);
+        }
     }
 
     // ── Propietats públiques ──────────────────────────────────────────────────
