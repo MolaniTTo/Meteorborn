@@ -121,6 +121,7 @@ public class BTAtacar : BTNode
                 minion.attackTarget = null;
                 minion.energy = 0f;
                 minion.ChangeState(MinionAI.MinionState.Debilitat);
+
             }
         }
 
@@ -182,6 +183,7 @@ public class BTTreballant : BTNode
 [CreateAssetMenu(fileName = "BTDesactivat", menuName = "BehaviourTree/Minion/Desactivat")]
 public class BTDesactivat : BTNode
 {
+
     public override bool Execute(MinionAI minion)
     {
         if (minion.currentState != MinionAI.MinionState.Desactivat) return false;

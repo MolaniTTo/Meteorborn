@@ -70,17 +70,45 @@ public class CarryObject : MonoBehaviour
         // Espera que tots els minions estiguin a posició
         yield return new WaitForSeconds(0.5f);
 
-        if (destination != null)
-        {
-            if (agent != null)
-                agent.SetDestination(destination.position);
+        Transform player = GameObject.FindGameObjectWithTag("PlayerFollow")?.transform;
 
-            yield return new WaitUntil(() =>
-                agent != null && !agent.pathPending && agent.remainingDistance < 0.3f);
+        while(true)
+        {
+            if(destination == null) break; // Si no hi ha destí, no fem res
+
+            if(PathHasOffMeshLinks(transform.position, destination.position)) //si el camí té OffMeshLinks, seguim el jugador en lloc del destí per evitar problemes de navegació
+            {
+                if(player != null && agent != null)
+                {
+                    agent.SetDestination(player.position);
+                }
+            }
+            else
+            {
+                if (agent != null)
+                {
+                    agent.SetDestination(destination.position); //Intenta anar al destí directament si no hi ha OffMeshLinks
+                }
+                yield return new WaitUntil(() => agent != null && !agent.pathPending && agent.remainingDistance < 0.3f); //Espera fins que arribem al destí o estiguem molt a prop
+
+                break; // Hem arribat al destí, sortim del bucle
+            }
+
+            yield return new WaitForSeconds(1f); // Espera una mica abans de tornar a comprovar el camí
         }
 
-        // Entrega completada
         OnDelivered();
+    }
+
+    private bool PathHasOffMeshLinks(Vector3 from, Vector3 to)
+    {
+        // Si hay un raycast directo de NavMesh sin interrupciones, no hay links
+        if (NavMesh.Raycast(from, to, out NavMeshHit hit, NavMesh.AllAreas))
+        {
+            // El raycast fue bloqueado → hay un hueco en el NavMesh → necesita link
+            return true;
+        }
+        return false;
     }
 
     private void OnDelivered()
