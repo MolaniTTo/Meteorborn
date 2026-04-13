@@ -112,7 +112,7 @@ public class MinionManager : MonoBehaviour
     // Cridat des de MinionCursor quan RT és premut
     // ────────────────────────────────────────────────────────────────────────
 
-    public void ConfirmCursorAction(Vector3 cursorWorldPos, Vector3 playerPos)
+    public void ConfirmCursorAction(Vector3 cursorWorldPos, Vector3 playerThrowPos)
     {
         // Prioritat 1: hi ha un minion pendent sota el cursor → activar/reactivar
         if (pendingMinion != null)
@@ -145,21 +145,22 @@ public class MinionManager : MonoBehaviour
         }
 
         // Prioritat 2: no hi ha minion pendent → llança un minion actiu cap al cursor
-        LaunchMinionToCursor(cursorWorldPos, playerPos);
+        LaunchMinionToCursor(cursorWorldPos, playerThrowPos);
     }
 
     // ────────────────────────────────────────────────────────────────────────
     // Llançament
     // ────────────────────────────────────────────────────────────────────────
 
-    public void LaunchMinionToCursor(Vector3 cursorWorldPos, Vector3 playerPos)
+    public void LaunchMinionToCursor(Vector3 cursorWorldPos, Vector3 playerThrowPos)
     {
         if (activeMinions.Count == 0) return;
 
         MinionAI toThrow = activeMinions
-            .OrderBy(m => Vector3.Distance(m.transform.position, playerPos))
+            .OrderBy(m => Vector3.Distance(m.transform.position, playerThrowPos))
             .First();
 
+        if (Vector3.Distance(toThrow.transform.position, playerThrowPos) > 2f) return; //Si el minion mes proper esta a una distancia superior a 5 unidades, no se lanza nada
         activeMinions.Remove(toThrow);
         toThrow.LaunchTo(cursorWorldPos, launchArcHeight, launchDuration);
     }
