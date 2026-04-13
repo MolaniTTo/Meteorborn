@@ -150,6 +150,11 @@ public class EnemicController : MonoBehaviour
         }
     }
 
+    public void DealDamage(float tempFlot)
+    {
+        energia -= tempFlot;
+    }
+
     void OnTriggerEnter(Collider other) {
         if (other.CompareTag("minion"))
         {

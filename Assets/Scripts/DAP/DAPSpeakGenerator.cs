@@ -20,7 +20,7 @@ public class DAPSpeakGenerator : MonoBehaviour
     {
         if (other.CompareTag("Drone"))
         {
-            dapMissions speak = other.GetComponent<dapMissions>();
+            DapMissions speak = other.GetComponent<DapMissions>();
             speak.ShowText(cosasQueDecir);
         }
     }

@@ -3,9 +3,10 @@ using UnityEngine.InputSystem;
 using System.Collections;
 using TMPro;
 
-public class dapMissions : MonoBehaviour
+public class DapMissions : MonoBehaviour
 {
     [SerializeField] Canvas canvasEspacial;
+    [SerializeField] ParticleSystem particle;
     [SerializeField] TextMeshProUGUI textoCanvas;
     [SerializeField] private int textEnMarxa = -1;
     [SerializeField] float textSpeed = 0.1f;
@@ -35,6 +36,7 @@ public class dapMissions : MonoBehaviour
         {
             textEnMarxa = -1;
             canvasEspacial.enabled = false;
+            particle.Stop();
 
         } else
         {
@@ -48,6 +50,7 @@ public class dapMissions : MonoBehaviour
         textoAMostrar = temptext;
 
         canvasEspacial.enabled = true;
+        particle.Play();
 
         StartCoroutine(EscriureText());
     }

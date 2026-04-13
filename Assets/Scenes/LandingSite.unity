@@ -1065,15 +1065,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b049e5ba9b220d746a5ae22499ac44b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shootAction:
-    m_Name: Shoot
-    m_Type: 1
-    m_ExpectedControlType: Button
-    m_Id: 657ccc9c-ddaa-4b1a-acbf-f1befb653820
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings: []
-    m_Flags: 0
+  jumpAction: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+--- !u!198 &1299822402 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 6752089521737600197, guid: 70d9eb4221b4bfc418aef501b0047d5f, type: 3}
+  m_PrefabInstance: {fileID: 1897767524}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1659678225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1230,6 +1227,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3905709129898175450, guid: 70d9eb4221b4bfc418aef501b0047d5f, type: 3}
+      propertyPath: particle
+      value: 
+      objectReference: {fileID: 1299822402}
+    - target: {fileID: 3905709129898175450, guid: 70d9eb4221b4bfc418aef501b0047d5f, type: 3}
+      propertyPath: particleSystem
+      value: 
+      objectReference: {fileID: 1299822402}
     - target: {fileID: 4135509350134429068, guid: 70d9eb4221b4bfc418aef501b0047d5f, type: 3}
       propertyPath: m_Camera
       value: 
