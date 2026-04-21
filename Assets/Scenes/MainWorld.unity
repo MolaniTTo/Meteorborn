@@ -373,7 +373,7 @@ GameObject:
   - component: {fileID: 821269611}
   m_Layer: 0
   m_Name: Pedra (2)
-  m_TagString: Untagged
+  m_TagString: meteorPart
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -457,7 +457,7 @@ GameObject:
   - component: {fileID: 850722858}
   m_Layer: 0
   m_Name: Pedra
-  m_TagString: Untagged
+  m_TagString: meteorPart
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -526,51 +526,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 366281161}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1190502154
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1190502156}
-  - component: {fileID: 1190502155}
-  m_Layer: 0
-  m_Name: MeteoritNau
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1190502155
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1190502154}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 670b8beaf4be2d3499693d8ab607ea3b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &1190502156
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1190502154}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 510.92, y: 2.02, z: 509.88}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1282119237}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1210745734
@@ -694,11 +649,6 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
---- !u!4 &1282119237 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
-  m_PrefabInstance: {fileID: 1951615304}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1336027638
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -923,7 +873,7 @@ GameObject:
   - component: {fileID: 1769652962}
   m_Layer: 0
   m_Name: Pedra (1)
-  m_TagString: Untagged
+  m_TagString: meteorPart
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -994,63 +944,75 @@ Transform:
   - {fileID: 757202555}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1951615304
+--- !u!1001 &2158054596236404440
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1190502156}
+    m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
+    - target: {fileID: 843404804252712568, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
+      propertyPath: 'objectes.Array.data[0]'
+      value: 
+      objectReference: {fileID: 850722860}
+    - target: {fileID: 843404804252712568, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
+      propertyPath: 'objectes.Array.data[1]'
+      value: 
+      objectReference: {fileID: 1769652964}
+    - target: {fileID: 843404804252712568, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
+      propertyPath: 'objectes.Array.data[2]'
+      value: 
+      objectReference: {fileID: 821269613}
+    - target: {fileID: 2610084004514553973, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
+      propertyPath: m_Name
+      value: MeteoritNau
+      objectReference: {fileID: 0}
+    - target: {fileID: 5288809392033183948, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 510.92
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
+    - target: {fileID: 5288809392033183948, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 2.02
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
+    - target: {fileID: 5288809392033183948, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
       propertyPath: m_LocalPosition.z
+      value: 509.88
+      objectReference: {fileID: 0}
+    - target: {fileID: 5288809392033183948, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5288809392033183948, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
+      propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: -0.7263522
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
+    - target: {fileID: 5288809392033183948, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.6873227
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
+    - target: {fileID: 5288809392033183948, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
+    - target: {fileID: 5288809392033183948, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
+    - target: {fileID: 5288809392033183948, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -273.163
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
-      propertyPath: m_Name
-      value: meteoritProtagonistaFinal
+    - target: {fileID: 5288809392033183948, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 6ec70b34a40571449a1df19323d9feff, type: 3}
+  m_SourcePrefab: {fileID: 100100000, guid: 84124483e7d9eea42b198bff6c26dc6f, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1058,7 +1020,7 @@ SceneRoots:
   - {fileID: 1371292613}
   - {fileID: 1210745736}
   - {fileID: 737363325}
-  - {fileID: 1190502156}
+  - {fileID: 2158054596236404440}
   - {fileID: 850722860}
   - {fileID: 1769652964}
   - {fileID: 821269613}

@@ -8,6 +8,7 @@ TagManager:
   - PlayerFollowPoint
   - Drone
   - minion
+  - meteorPart
   layers:
   - Default
   - TransparentFX
