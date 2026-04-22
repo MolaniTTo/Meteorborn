@@ -5036,7 +5036,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canvasEspacial: {fileID: 4135509350134429068}
-  particleSystem: {fileID: 6752089521737600197}
+  particle: {fileID: 6752089521737600197}
   textoCanvas: {fileID: 8668066637130915189}
   textEnMarxa: -1
   textSpeed: 0.1
