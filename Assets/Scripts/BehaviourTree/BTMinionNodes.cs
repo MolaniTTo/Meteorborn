@@ -75,8 +75,10 @@ public class BTCasiMort : BTNode
 [CreateAssetMenu(fileName = "BTAtacar", menuName = "BehaviourTree/Minion/Atacar")]
 public class BTAtacar : BTNode
 {
+
     public override bool Execute(MinionAI minion)
     {
+
         if (minion.currentState != MinionAI.MinionState.Atacar) return false; //Si no esta en estat d'atacar, no fa res i retorna false per passar al següent node del selector
 
         if (minion.attackTarget == null) //Si no te objectiu d'atac, canvia a estat Activat, se suposa que si estava atacant s'ha mort l'enemic
@@ -136,6 +138,7 @@ public class BTAtacar : BTNode
 [CreateAssetMenu(fileName = "BTDebilitat", menuName = "BehaviourTree/Minion/Debilitat")]
 public class BTDebilitat : BTNode
 {
+
     public override bool Execute(MinionAI minion)
     {
         if (minion.currentState != MinionAI.MinionState.Debilitat) return false;
@@ -151,6 +154,7 @@ public class BTDebilitat : BTNode
 [CreateAssetMenu(fileName = "BTActivat", menuName = "BehaviourTree/Minion/Activat")]
 public class BTActivat : BTNode
 {
+
     public override bool Execute(MinionAI minion)
     {
         if (minion.currentState != MinionAI.MinionState.Activat) return false;
@@ -167,6 +171,7 @@ public class BTActivat : BTNode
 [CreateAssetMenu(fileName = "BTTreballant", menuName = "BehaviourTree/Minion/Treballant")]
 public class BTTreballant : BTNode
 {
+
     public override bool Execute(MinionAI minion)
     {
         if (minion.currentState != MinionAI.MinionState.Treballant) return false;
@@ -183,7 +188,6 @@ public class BTTreballant : BTNode
 [CreateAssetMenu(fileName = "BTDesactivat", menuName = "BehaviourTree/Minion/Desactivat")]
 public class BTDesactivat : BTNode
 {
-
     public override bool Execute(MinionAI minion)
     {
         if (minion.currentState != MinionAI.MinionState.Desactivat) return false;
