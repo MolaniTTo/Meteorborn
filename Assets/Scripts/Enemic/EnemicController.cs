@@ -5,6 +5,7 @@ public class EnemicController : MonoBehaviour
 {
     [SerializeField] Transform guardPoint;
     [SerializeField] private float speed = 0f;
+    [SerializeField] private float targetSpeed = 3.5f;
     [SerializeField] float guardDistance = 6f;
 
     public float energia = 100f;
@@ -14,6 +15,8 @@ public class EnemicController : MonoBehaviour
     public Vector3 nextPoint;
 
     public NavMeshAgent agent;
+
+    [SerializeField] NavMeshAgent fantasmaAgent;
 
     private Animator animator;
 
@@ -25,6 +28,9 @@ public class EnemicController : MonoBehaviour
         GenerarPoint();
 
         animator = gameObject.GetComponentInChildren<Animator>();
+
+        agent.speed = targetSpeed;
+        fantasmaAgent.speed = targetSpeed;
     }
 
     void Update()
@@ -92,15 +98,17 @@ public class EnemicController : MonoBehaviour
 
     void MoveToMinion()
     {
-        agent.SetDestination(perseguint.GetComponent<Transform>().position);
+        fantasmaAgent.SetDestination(perseguint.GetComponent<Transform>().position);
+        agent.SetDestination(fantasmaAgent.transform.position);
     }
 
     void MoveToPoint()
     {
         //transform.position = Vector3.MoveTowards(transform.position, nextPoint, speed * Time.deltaTime);
-        agent.SetDestination(nextPoint);
+        fantasmaAgent.SetDestination(nextPoint);
+        agent.SetDestination(fantasmaAgent.transform.position);
 
-        if (Vector3.Distance(transform.position, nextPoint) < 0.1f)
+        if (Vector3.Distance(transform.position, nextPoint) < 4f)
         {
             GenerarPoint();
         }
@@ -108,7 +116,9 @@ public class EnemicController : MonoBehaviour
 
     void MoveToCenter()
     {
-        agent.SetDestination(guardPoint.position);
+        fantasmaAgent.SetDestination(guardPoint.position);
+        agent.SetDestination(fantasmaAgent.transform.position);
+
         perseguint = null;
     }
 
