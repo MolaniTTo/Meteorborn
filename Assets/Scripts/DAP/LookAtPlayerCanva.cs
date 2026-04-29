@@ -2,16 +2,17 @@ using UnityEngine;
 
 public class LookAtPlayerCanva : MonoBehaviour
 {
-    private Transform transformCanva;
+    private Transform target;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // transformCanva = GameObject.FindWithTag("MainCamera");
+        target = Camera.main.transform;
     }
 
-    // Update is called once per frame
-    void FixedUpdate() {
-        // Vector3.LookAt(transformCanva);
+    void FixedUpdate()
+    {
+        transform.LookAt(target);
+
+        transform.Rotate(0, 180, 0);
     }
 }

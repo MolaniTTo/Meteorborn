@@ -9,6 +9,7 @@ TagManager:
   - Drone
   - minion
   - meteorPart
+  - pesa
   layers:
   - Default
   - TransparentFX
