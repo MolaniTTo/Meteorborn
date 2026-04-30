@@ -70,7 +70,7 @@ public class CarryObject : MonoBehaviour
         // Espera que tots els minions estiguin a posició
         yield return new WaitForSeconds(0.5f);
 
-        Transform player = GameObject.FindGameObjectWithTag("PlayerFollow")?.transform;
+        Transform playerFollow = GameObject.FindGameObjectWithTag("PlayerFollow")?.transform;
 
         while(true)
         {
@@ -78,9 +78,11 @@ public class CarryObject : MonoBehaviour
 
             if(PathHasOffMeshLinks(transform.position, destination.position)) //si el camí té OffMeshLinks, seguim el jugador en lloc del destí per evitar problemes de navegació
             {
-                if(player != null && agent != null)
+                Vector3 dist = playerFollow.position - transform.position;
+
+                if (playerFollow != null && agent != null && dist.magnitude > 3f)
                 {
-                    agent.SetDestination(player.position);
+                    agent.SetDestination(playerFollow.position);
                 }
             }
             else
