@@ -4,6 +4,7 @@
 
 using UnityEngine;
 
+
 // ── 1. CASI MORT (Prioritat màxima) ─────────────────────────────────────────
 // El minion cau on estava. Vigila si l'enemic mor en 15s:
 //   → Enemic mort en temps   : entra en Debilitat
@@ -154,7 +155,6 @@ public class BTDebilitat : BTNode
 [CreateAssetMenu(fileName = "BTActivat", menuName = "BehaviourTree/Minion/Activat")]
 public class BTActivat : BTNode
 {
-
     public override bool Execute(MinionAI minion)
     {
         if (minion.currentState != MinionAI.MinionState.Activat) return false;
@@ -171,7 +171,6 @@ public class BTActivat : BTNode
 [CreateAssetMenu(fileName = "BTTreballant", menuName = "BehaviourTree/Minion/Treballant")]
 public class BTTreballant : BTNode
 {
-
     public override bool Execute(MinionAI minion)
     {
         if (minion.currentState != MinionAI.MinionState.Treballant) return false;
