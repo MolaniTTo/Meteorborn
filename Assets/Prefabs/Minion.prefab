@@ -128,6 +128,7 @@ MonoBehaviour:
   agent: {fileID: 0}
   animator: {fileID: 0}
   playerFollow: {fileID: 0}
+  playerThrow: {fileID: 0}
   rootNode: {fileID: 11400000, guid: 393bf0fcd8766504b8c24223428a971b, type: 2}
   spawner: {fileID: 0}
   spawnPosition: {x: 0, y: 0, z: 0}
@@ -157,7 +158,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
+  m_Speed: 4.5
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120

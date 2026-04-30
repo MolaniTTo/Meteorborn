@@ -23,6 +23,11 @@ public class MinionManager : MonoBehaviour
     public float launchArcHeight = 3f;
     public float launchDuration = 0.6f;
 
+    public PlayerStateMachine player;
+
+    private MinionAI pendingLaunch = null;
+    private Vector3 pendingLaunchTarget;
+
     // ── Llistes internes ──────────────────────────────────────────────────────
     [SerializeField] private List<MinionAI> allMinions = new List<MinionAI>();
     [SerializeField] private List<MinionAI> activeMinions = new List<MinionAI>();
@@ -154,15 +159,47 @@ public class MinionManager : MonoBehaviour
 
     public void LaunchMinionToCursor(Vector3 cursorWorldPos, Vector3 playerThrowPos)
     {
-        if (activeMinions.Count == 0) return;
+        Debug.Log($"[Launch] pendingLaunch={pendingLaunch}, activeMinions={activeMinions.Count}");
+
+        if (pendingLaunch != null)
+        {
+            Debug.Log("[Launch] BLOQUEJAT per pendingLaunch actiu");
+            return;
+        }
+
+        if (activeMinions.Count == 0)
+        {
+            Debug.Log("[Launch] No hi ha minions actius");
+            return;
+        }
 
         MinionAI toThrow = activeMinions
             .OrderBy(m => Vector3.Distance(m.transform.position, playerThrowPos))
             .First();
 
-        if (Vector3.Distance(toThrow.transform.position, playerThrowPos) > 2f) return; //Si el minion mes proper esta a una distancia superior a 5 unidades, no se lanza nada
+        float dist = Vector3.Distance(toThrow.transform.position, playerThrowPos);
+        Debug.Log($"[Launch] Minion mes proper: {toThrow.name}, dist={dist}");
+
+        if (dist > 2f)
+        {
+            Debug.Log("[Launch] Minion massa lluny, no es llança");
+            return;
+        }
+
         activeMinions.Remove(toThrow);
-        toThrow.LaunchTo(cursorWorldPos, launchArcHeight, launchDuration);
+        pendingLaunch = toThrow;
+        pendingLaunchTarget = cursorWorldPos;
+
+        Debug.Log($"[Launch] Llançant {toThrow.name}, activeMinions restants={activeMinions.Count}");
+        player.PlayThrowAnimation();
+    }
+
+    public void ExecutePendingLaunch()
+    {
+        Debug.Log($"[Execute] pendingLaunch={pendingLaunch?.name ?? "NULL"}");
+        if (pendingLaunch == null) return;
+        pendingLaunch.LaunchTo(pendingLaunchTarget, launchArcHeight, launchDuration);
+        pendingLaunch = null;
     }
 
     // ────────────────────────────────────────────────────────────────────────

@@ -29,6 +29,12 @@ public class PlayerStateMachine : MonoBehaviour
     [Header("Components")]
     [SerializeField] private NavMeshAgent agent;
 
+    [Header("Animator")]
+    [SerializeField] private Animator animator;
+    private static readonly int ThrowTrigger = Animator.StringToHash("Throw");
+    private static readonly int ThrowLayerIndex = 1;
+    private bool isThrowingAnimation = false;
+
     [Header("Camera")]
     [SerializeField] private Transform cameraTransform;
 
@@ -50,6 +56,9 @@ public class PlayerStateMachine : MonoBehaviour
     [Header("Transforms")]
     public Transform playerFollowPosition;
     public Transform playerThrowPosition;
+
+    [Header("Minion Cursor")]
+    [SerializeField] private MinionCursor minionCursor;
 
     // ── NavMesh Link ──────────────────────────────────────────────────────────
     [SerializeField] private bool traversingLink = false;
@@ -195,6 +204,13 @@ public class PlayerStateMachine : MonoBehaviour
 
         if (agent.isOnOffMeshLink && !agent.pathPending && !traversingLink)
             StartCoroutine(TraverseLink());
+
+        UpdateAnimator();
+
+        if (minionCursor != null && minionCursor.IsActive)
+        {
+            FaceTowardsCursor();
+        }
     }
 
     // ── ProcessInputActions ───────────────────────────────────────────────────
@@ -351,6 +367,64 @@ public class PlayerStateMachine : MonoBehaviour
         agent.SetDestination(finalDestination);
         traversingLink = false;
     }
+
+    private void UpdateAnimator()
+    {
+        float speed = agent.velocity.magnitude;
+        animator.SetFloat("Speed", speed, 0.1f, Time.deltaTime);
+    }
+
+    public void PlayThrowAnimation()
+    {
+        if (isThrowingAnimation) return;
+        StartCoroutine(ThrowAnimationRoutine());
+    }
+
+    private IEnumerator ThrowAnimationRoutine()
+    {
+        isThrowingAnimation = true;
+
+        float duration = 0.1f;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            animator.SetLayerWeight(ThrowLayerIndex, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+        animator.SetLayerWeight(ThrowLayerIndex, 1f);
+
+        animator.SetTrigger(ThrowTrigger);
+
+        yield return new WaitForSeconds(0.5f);
+
+        MinionManager.Instance?.ExecutePendingLaunch();
+
+        elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            animator.SetLayerWeight(ThrowLayerIndex, Mathf.Clamp01(1f - elapsed / duration));
+            yield return null;
+        }
+        animator.SetLayerWeight(ThrowLayerIndex, 0f);
+
+        isThrowingAnimation = false;
+    }
+
+
+    private void FaceTowardsCursor()
+    {
+        Vector3 dir = minionCursor.WorldPosition - transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude > 0.01f)
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.LookRotation(dir),
+                rotationSpeed * Time.deltaTime);
+    }
+
+
 
     // ── Input callbacks (legacy, per compatibilitat) ──────────────────────────
     private void OnMove(CallbackContext ctx) => moveInput = ctx.ReadValue<Vector2>();

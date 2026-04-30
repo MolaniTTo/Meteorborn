@@ -189,6 +189,7 @@ public class MinionAI : MonoBehaviour
 
     private void OnLanded()
     {
+        Debug.Log($"[MinionAI] {name} ha aterrat");
         Collider[] hits = Physics.OverlapSphere(transform.position, 1.5f);
         foreach (Collider col in hits)
         {
@@ -198,7 +199,7 @@ public class MinionAI : MonoBehaviour
         }
         ChangeState(MinionState.Activat);
         MinionManager.Instance?.RegisterActive(this);
-        Debug.Log("Minion registrat de nou");
+        Debug.Log($"[MinionAI] {name} registrat de nou com actiu");
     }
 
     // ── OffMeshLink ──────────────────────────────────────────────────────────
