@@ -18,6 +18,11 @@ public class ParticulasScript : MonoBehaviour
         Vector3 direction = (playerTransform.position - transform.position).normalized;
         rb.AddForce(direction * 2f, ForceMode.Force);
 
+        if (transform.position.y <= -0)
+        {
+            transform.position = new Vector3(transform.position.x, transform.position.y + 2f, transform.position.z);
+        }
+
     }
 
     void OnTriggerEnter(Collider other) {

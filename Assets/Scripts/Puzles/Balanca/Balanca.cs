@@ -36,5 +36,10 @@ public class Balanca : MonoBehaviour
         rotacioObjectiu = pesResult * 3f;
 
         actualitzant = true;
+
+        if (plataformaBalanca1.pess != 0f && plataformaBalanca1.pess == plataformaBalanca2.pess)
+        {
+            Debug.Log("Aniol");
+        }
     }
 }

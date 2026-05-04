@@ -44,17 +44,17 @@ public class EnemicController : MonoBehaviour
         if ( Vector3.Distance(transform.position, guardPoint.position) > guardDistance) //Esta lluny de la font?
         {
             MoveToCenter();
-            Debug.Log("Lluny de la font");
+
         }
         else
         {
             if (energia < 30f) //La energia es mes petita que 30%?
             {
                 MoveToCenter();
-                Debug.Log("Energia baixa");
+                
                 if (Vector3.Distance(transform.position, guardPoint.position) < 2f)
                 {
-                    Debug.Log("Curant");
+                    
                     energia += Time.deltaTime * 2f;
                 }
             }
@@ -88,7 +88,7 @@ public class EnemicController : MonoBehaviour
                     else
                     {
                         //Wonder
-                        Debug.Log("Viatjant al punt");
+                        
                         MoveToPoint();
                     }
                 }

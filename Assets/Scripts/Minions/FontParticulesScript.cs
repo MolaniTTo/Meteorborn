@@ -18,7 +18,8 @@ public class FontParticulesScript : MonoBehaviour
 
             if (contador > 0.80f)
             {
-                Instantiate(particula);
+                Vector3 tempVector = new Vector3(transform.position.x + Random.Range(-1f, 1f), transform.position.y + 10f, transform.position.z + Random.Range(-1f, 1f));
+                Instantiate(particula, tempVector, Quaternion.identity);
 
                 contador = 0f;
             }
