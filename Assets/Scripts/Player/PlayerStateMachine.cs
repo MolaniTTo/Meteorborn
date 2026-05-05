@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
@@ -6,106 +6,136 @@ using static UnityEngine.InputSystem.InputAction;
 
 public class PlayerStateMachine : MonoBehaviour
 {
-    //Vistes del jugador
-    public enum PlayerViewMode      
-    {
-        ThirdPerson,
-        OrthographicView,
-    }
+    // ── Enums ─────────────────────────────────────────────────────────────────
+    public enum PlayerViewMode { ThirdPerson, OrthographicView }
+    public enum PlayerState { Idle, Walking, OrthoIdle, OrthoMoving, LockOnIdle, LockOnMoving }
 
-    //Estats del player
-    public enum PlayerState     
-    {
-        Idle,
-        Walking,
-        OrthoIdle,
-        OrthoMoving,
-    }
+    // ── Input System ──────────────────────────────────────────────────────────
+    private InputSystem_Actions inputActions;
+    private InputAction moveAction;
+    private InputAction lookAction;
+    private InputAction confirmAction;
+    private InputAction leftTrigger;    // LT → detecta si el cursor/lock-on és actiu
 
-    //Input System Actions
-    private InputSystem_Actions inputActions;           //Input System Actions reference (la classe de C# generada a partir de l'Input System Actions asset)
-    private InputAction moveAction;                     //Input Action reference (la acci� de moure del Input System Actions asset)
-    private InputAction lookAction;                     //Input Action reference (la acci� de mirar del Input System Actions asset)
-    private InputAction confirmAction;                  //Input Action reference (la acci� de confirmar del Input System Actions asset)
-
-
-    //Variables per als inputs del player
-    private Vector2 moveInput;                          //Vector3 per emmagatzemar la direcci� del moviment del player (x, y, z)
+    // ── Variables d'input ─────────────────────────────────────────────────────
+    private Vector2 moveInput;
     private Vector2 lookInput;
 
-
-    //Variables per a la gesti� de l'estat del player
+    // ── Estat ─────────────────────────────────────────────────────────────────
     private PlayerViewMode playerViewMode;
     private PlayerState currentState;
 
-    //Components
+    // ── Components ────────────────────────────────────────────────────────────
     [Header("Components")]
-    [SerializeField] private NavMeshAgent agent;        //Refer�ncia al component NavMeshAgent del player (assignat des de l'inspector)
+    [SerializeField] private NavMeshAgent agent;
 
-    //Camera
+    [Header("Animator")]
+    [SerializeField] private Animator animator;
+    private static readonly int ThrowTrigger = Animator.StringToHash("Throw");
+    private static readonly int ThrowLayerIndex = 1;
+    private bool isThrowingAnimation = false;
+
     [Header("Camera")]
-    [SerializeField] private Transform cameraTransform; //Aqui posem la main camera del player (assignada des de l'inspector)
+    [SerializeField] private Transform cameraTransform;
 
-    //Moviment
     [Header("Movement Settings")]
-    [SerializeField] private float moveSpeed = 3.5f;    //Velocitat de moviment del player (assignada des de l'inspector)    
-    [SerializeField] private float rotationSpeed = 10f; //velocitat del Slerp amb que el player gira cap a la direcci� del moviment
+    [SerializeField] private float moveSpeed = 3.5f;
+    [SerializeField] private float rotationSpeed = 10f;
 
-    //Ortho
     [Header("Ortho Settings")]
-    [SerializeField] private OrthoCursor orthoCursor;       // Referencia al cursor 3D de la escena
-    [SerializeField] private float linkSpeed = 8f;          // Velocitat al travessar un OffMeshLink
-    [SerializeField] private float arrivalDistance = 0.3f;  // Distancia per considerar que el player ha arribat al desti
+    [SerializeField] private OrthoCursor orthoCursor;
+    [SerializeField] private float linkSpeed = 8f;
+    [SerializeField] private float arrivalDistance = 0.3f;
 
-    //NavMesh Link Traversal
-    private bool traversingLink = false;
+    [Header("Lock-On Orbital Movement")]
+    [SerializeField] private float orbitalSpeed = 3f;       // velocitat de strafe al voltant de l'enemic
+    [SerializeField] private float orbitalMinDist = 2f;     // distància mínima a l'enemic (s'hi queda)
+    [SerializeField] private float orbitalMaxDist = 8f;     // distància màxima (s'hi apropa)
+    [SerializeField] private float lockOnRotationSpeed = 8f;// velocitat de gir cap a l'enemic
 
+    [Header("Transforms")]
+    public Transform playerFollowPosition;
+    public Transform playerThrowPosition;
 
+    [Header("Minion Cursor")]
+    [SerializeField] private MinionCursor minionCursor;
 
-    private void Awake()
+    // ── NavMesh Link ──────────────────────────────────────────────────────────
+    [SerializeField] private bool traversingLink = false;
+
+    // ── Light Particles ───────────────────────────────────────────────────────
+    [SerializeField] private int MaxParticles;
+    [SerializeField] private int numberOfParticles;
+
+    void Awake()
     {
-        inputActions = new InputSystem_Actions();       //Inicialitzem la classe de C# generada a partir de l'Input System Actions asset
-        moveAction = inputActions.Player.Move;          //Obtenim la refer�ncia a l'acci� de moure del Input System Actions asset
-        lookAction = inputActions.Player.Look;          //Obtenim la refer�ncia a l'acci� de mirar del Input System Actions asset
-        confirmAction = inputActions.Player.Confirm;    //Obtenim la refer�ncia a l'acci� de confirmar del Input System Actions asset
+        inputActions = new InputSystem_Actions();
+        moveAction = inputActions.Player.Move;
+        lookAction = inputActions.Player.Look;
+        confirmAction = inputActions.Player.Confirm;
+        leftTrigger = inputActions.Player.CursorMode;
 
         agent = GetComponent<NavMeshAgent>();
-        agent.updateRotation = false;                   //Deshabilitem que el NavMeshAgent actualitzi la rotaci� del player, ja que nosaltres gestionarem la rotaci� manualment al nostre script de moviment
-        agent.speed = moveSpeed;  
-        agent.autoTraverseOffMeshLink = false;          //Deshabilitem que el NavMeshAgent travessi autom�ticament els OffMeshLinks, ja que nosaltres gestionarem el travessament manualment al nostre script de moviment
+        agent.updateRotation = false;
+        agent.speed = moveSpeed;
+        agent.autoTraverseOffMeshLink = false;
         agent.acceleration = 99999f;
         agent.angularSpeed = 99999f;
     }
 
-
-    private void OnEnable()
+    void OnEnable()
     {
         inputActions.Player.Enable();
         confirmAction.performed += OnConfirmPerformed;
+
+        // Subscriu als events del LockOnSystem
+        if (LockOnSystem.Instance != null)
+        {
+            LockOnSystem.Instance.OnLockOnAcquired += OnLockOnAcquired;
+            LockOnSystem.Instance.OnLockOnLost += OnLockOnLost;
+        }
     }
 
-    private void OnDisable()
+    void OnDisable()
     {
         confirmAction.performed -= OnConfirmPerformed;
         inputActions.Player.Disable();
+
+        if (LockOnSystem.Instance != null)
+        {
+            LockOnSystem.Instance.OnLockOnAcquired -= OnLockOnAcquired;
+            LockOnSystem.Instance.OnLockOnLost -= OnLockOnLost;
+        }
     }
+
+    // ── LockOn callbacks ──────────────────────────────────────────────────────
+
+    private void OnLockOnAcquired(Transform target)
+    {
+        if (playerViewMode != PlayerViewMode.ThirdPerson) return;
+        currentState = PlayerState.LockOnIdle;
+    }
+
+    private void OnLockOnLost()
+    {
+        if (currentState == PlayerState.LockOnIdle || currentState == PlayerState.LockOnMoving)
+            currentState = PlayerState.Idle;
+    }
+
+    // ── Confirm (Ortho) ───────────────────────────────────────────────────────
 
     private void OnConfirmPerformed(CallbackContext ctx)
     {
-        //Nomes actua si estem en mode ortografic i no estem ja travessant un link
         if (playerViewMode != PlayerViewMode.OrthographicView) return;
         if (traversingLink) return;
 
         switch (orthoCursor.CurrentMode)
         {
             case OrthoCursor.CursorMode.NavMesh:
-                //Mou el player al punt del cursor
                 agent.SetDestination(orthoCursor.WorldPosition);
                 currentState = PlayerState.OrthoMoving;
                 break;
-
             case OrthoCursor.CursorMode.Free:
-                // Comprova si hi ha un objecte interactuable a la posicio del cursor
                 TryInteract();
                 break;
         }
@@ -113,154 +143,145 @@ public class PlayerStateMachine : MonoBehaviour
 
     private void TryInteract()
     {
-        //Raycast des de la posicio del cursor cap avall per detectar objectes interactuables
         Ray ray = new Ray(orthoCursor.WorldPosition + Vector3.up * 5f, Vector3.down);
-
         if (Physics.Raycast(ray, out RaycastHit hit, 10f))
         {
             if (hit.collider.CompareTag("Interactable"))
-            {
-                Debug.Log($"Interactuant amb: {hit.collider.gameObject.name}");
-                //Aqui cridarem al component Interactuable quan el tinguem implementat
-            }
+                GameManager.instance.HandleInteraction(hit.collider.gameObject);
             else
-            {
                 Debug.Log("No hi ha cap objecte interactuable aqui");
-            }
         }
     }
 
-    private void Start()
+    // ── Start ─────────────────────────────────────────────────────────────────
+
+    void Start()
     {
-        playerViewMode = PlayerViewMode.ThirdPerson;    //Inicialitzem la vista del player a Third Person
-        currentState = PlayerState.Idle;                //Inicialitzem l'estat del player a Idle
-
-        if(orthoCursor != null)
-        {
-            orthoCursor.SetActive(false);               //Assegurem que el cursor 3D est� desactivat al iniciar el joc, ja que comencem en mode Third Person
-        }
+        playerViewMode = PlayerViewMode.ThirdPerson;
+        currentState = PlayerState.Idle;
+        if (orthoCursor != null) orthoCursor.SetActive(false);
     }
 
-    public void SetViewMode(PlayerViewMode mode)    // Cridat des del CameraSwitcher quan canvia de camara
+    // ── SetViewMode ───────────────────────────────────────────────────────────
+
+    public void SetViewMode(PlayerViewMode mode)
     {
         playerViewMode = mode;
 
-        if (mode == PlayerViewMode.OrthographicView)    //Si la vista es canvia a mode ortografic, canviem l'estat del player a OrthoIdle i activem el cursor 3D
+        if (mode == PlayerViewMode.OrthographicView)
         {
             currentState = PlayerState.OrthoIdle;
             agent.ResetPath();
             agent.speed = moveSpeed;
-
             if (orthoCursor != null)
             {
-                //Posicionem el cursor a sobre del player al activar el mode ortografic
                 orthoCursor.transform.position = transform.position;
                 orthoCursor.SetActive(true);
             }
         }
-        else    //Si la vista es canvia a mode Third Person, canviem l'estat del player a Idle i desactivem el cursor 3D
+        else
         {
             currentState = PlayerState.Idle;
-
-            if (orthoCursor != null)
-                orthoCursor.SetActive(false);
+            if (orthoCursor != null) orthoCursor.SetActive(false);
         }
     }
+
+    // ── Update ────────────────────────────────────────────────────────────────
 
     void Update()
     {
         ProcessInputActions();
-        
+
         switch (currentState)
         {
-            case PlayerState.Idle:
-                HandleIdle();                           //L�gica per a l'estat Idle (per exemple, animaci� d'estar parat, etc.)
-                break;
-
-            case PlayerState.Walking:
-                HandleWalking();                        //L�gica per a l'estat Walking (per exemple, animaci� de caminar, moviment del player, etc.)
-                break;
-
-            case PlayerState.OrthoIdle:
-                HandleOrthoIdle();                       //Podem reutilitzar la mateixa l�gica d'Idle per a OrthoIdle, ja que el player est� parat en ambd�s casos
-                break;
-
-            case PlayerState.OrthoMoving:
-                HandleOrthoMoving();
-                break;
+            case PlayerState.Idle: HandleIdle(); break;
+            case PlayerState.Walking: HandleWalking(); break;
+            case PlayerState.OrthoIdle: HandleOrthoIdle(); break;
+            case PlayerState.OrthoMoving: HandleOrthoMoving(); break;
+            case PlayerState.LockOnIdle: HandleLockOnIdle(); break;
+            case PlayerState.LockOnMoving: HandleLockOnMoving(); break;
         }
 
-        if (agent.isOnOffMeshLink && !agent.pathPending && !traversingLink) { StartCoroutine(TraverseLink()); } //Si el player est� a sobre d'un OffMeshLink, no est� calculant un nou cam�, i no est� ja travessant un link, iniciem la coroutine per a travessar el link
+        if (agent.isOnOffMeshLink && !agent.pathPending && !traversingLink)
+            StartCoroutine(TraverseLink());
+
+        UpdateAnimator();
+
+        if (minionCursor != null && minionCursor.IsActive)
+        {
+            FaceTowardsCursor();
+        }
     }
 
-    //------------------------ INPUT ------------------------//
+    // ── ProcessInputActions ───────────────────────────────────────────────────
 
     private void ProcessInputActions()
     {
-        moveInput = moveAction.ReadValue<Vector2>();    // x = horitzontal, y = vertical del joistick  
-        
-        if(playerViewMode == PlayerViewMode.ThirdPerson)
+        moveInput = moveAction.ReadValue<Vector2>();
+
+        if (playerViewMode == PlayerViewMode.ThirdPerson)
         {
-            currentState = moveInput.sqrMagnitude > 0.01f ? PlayerState.Walking : PlayerState.Idle;   //Si hi ha input de moviment, canviem l'estat del player a Walking, sino a Idle (operador ternari per a simplificar el codi)
+            bool lockedOn = LockOnSystem.Instance != null && LockOnSystem.Instance.IsLockedOn;
+
+            if (lockedOn)
+            {
+                // Mode lock-on orbital
+                currentState = moveInput.sqrMagnitude > 0.01f
+                    ? PlayerState.LockOnMoving
+                    : PlayerState.LockOnIdle;
+            }
+            else
+            {
+                // Mode normal (LT cursor o lliure)
+                if (currentState == PlayerState.LockOnIdle || currentState == PlayerState.LockOnMoving)
+                    currentState = PlayerState.Idle;
+
+                currentState = moveInput.sqrMagnitude > 0.01f
+                    ? PlayerState.Walking
+                    : PlayerState.Idle;
+            }
         }
-        if (playerViewMode == PlayerViewMode.OrthographicView && orthoCursor != null)   //Si esta en ortografic actualitza la posicio del cursor 3D segons el input de moviment, per a que el jugador pugui moure el cursor amb el joistick abans de confirmar la posici� amb el bot� de confirmaci� i comen�ar a moure's cap a la posici� del cursor
-        {
+
+        if (playerViewMode == PlayerViewMode.OrthographicView && orthoCursor != null)
             orthoCursor.SetMoveInput(moveInput);
-        }
     }
 
-    //------------------------ STATES ------------------------//
+    // ── States ────────────────────────────────────────────────────────────────
 
     private void HandleIdle()
     {
-        agent.SetDestination(transform.position);       //Passem la posicio actual com a desti
+        agent.SetDestination(transform.position);
     }
 
     private void HandleWalking()
     {
-        //Convertim el input 2D del joistick en una direccio 3D relativa a la c�mera, per a que el moviment del player sigui en la direcci� en qu� est� mirant la c�mera
+        Vector3 camForward = cameraTransform.forward; camForward.y = 0f; camForward.Normalize();
+        Vector3 camRight = cameraTransform.right; camRight.y = 0f; camRight.Normalize();
+        Vector3 moveDirection = camForward * moveInput.y + camRight * moveInput.x;
 
-        Vector3 camForward = cameraTransform.forward;   //Obtenim la direcci� forward de la c�mera (que �s la direcci� en qu� est� mirant la c�mera)
-        Vector3 camRight = cameraTransform.right;       //Obtenim la direcci� right de la c�mera (que �s la direcci� perpendicular a la direcci�n forward de la c�mera, cap a la dreta)
+        agent.SetDestination(transform.position + moveDirection * moveSpeed);
 
-        camForward.y = 0f;                              //Anulem la componente vertical de la direccio forward de la c�mera, per a que el moviment del player sigui nomes en el pla horizontal
-        camRight.y = 0f;                                //Anulem la componente vertical de la direccio right de la c�mera, per a que el movimient del player sigui nomes en el pla horizontal
-        
-        camForward.Normalize();                         //Normalitzem la direcci� forward de la c�mera, per a que tingui una magnitud de 1 i nom�s representi la direcci�
-        camRight.Normalize();                           //Normalitzem la direcci� right de la c�mera, per a que tingui una magnitud de 1 i nom�s representi la direcci�
-
-        //Direccio de moviment en espai mon, relatiu a la camara
-        Vector3 moveDirection = (camForward * moveInput.y + camRight * moveInput.x);   
-
-        //Moure al agent cal a la direccio calculada
-        Vector3 targetPosition = transform.position + moveDirection * moveSpeed;
-        agent.SetDestination(targetPosition); 
-
-        if(moveDirection.sqrMagnitude > 0.01f)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);   //Calculem la rotaci� que ha de tenir el player per a mirar cap a la direcci� de moviment
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);   //Girem el player cap a la direcci� de moviment amb un Slerp per a que el gir sigui suau
-        }
+        if (moveDirection.sqrMagnitude > 0.01f)
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.LookRotation(moveDirection),
+                rotationSpeed * Time.deltaTime);
     }
 
     private void HandleOrthoIdle()
     {
-        agent.SetDestination(transform.position);   //Passem la posicio actual com a desti
+        agent.SetDestination(transform.position);
     }
 
     private void HandleOrthoMoving()
     {
-        //Gira el player cap al desti mentre es mou
-        Vector3 directionToDestination = (agent.destination - transform.position);
-        directionToDestination.y = 0f;
+        Vector3 dir = agent.destination - transform.position; dir.y = 0f;
+        if (dir.sqrMagnitude > 0.01f)
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.LookRotation(dir),
+                rotationSpeed * Time.deltaTime);
 
-        if (directionToDestination.sqrMagnitude > 0.01f)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(directionToDestination);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-        }
-
-        //Comprovem si el player ha arribat al desti
         if (!agent.pathPending && agent.remainingDistance <= arrivalDistance)
         {
             currentState = PlayerState.OrthoIdle;
@@ -268,38 +289,144 @@ public class PlayerStateMachine : MonoBehaviour
         }
     }
 
+    // ── Lock-On Orbital (estil Zelda) ─────────────────────────────────────────
 
-    //------------------------ OFFMESHLINK TRAVERSAL ------------------------//
+    private void HandleLockOnIdle()
+    {
+        if (LockOnSystem.Instance == null || !LockOnSystem.Instance.IsLockedOn) return;
+        Transform target = LockOnSystem.Instance.Target;
+
+        FaceTarget(target);
+        agent.ResetPath();
+        agent.velocity = Vector3.zero;
+    }
+
+    private void HandleLockOnMoving()
+    {
+        if (LockOnSystem.Instance == null || !LockOnSystem.Instance.IsLockedOn) return;
+        Transform target = LockOnSystem.Instance.Target;
+
+        FaceTarget(target);
+
+        Vector3 toEnemy = target.position - transform.position;
+        toEnemy.y = 0f;
+        float currentDist = toEnemy.magnitude;
+        Vector3 dirToEnemy = toEnemy.normalized;
+
+        Vector3 strafeDir = Vector3.Cross(Vector3.up, dirToEnemy);
+        Vector3 lateralMove = strafeDir * moveInput.x * orbitalSpeed;
+
+        float forwardInput = moveInput.y;
+        Vector3 radialMove = Vector3.zero;
+
+        if (forwardInput > 0 && currentDist > orbitalMinDist)
+            radialMove = dirToEnemy * forwardInput * orbitalSpeed;
+        else if (forwardInput < 0 && currentDist < orbitalMaxDist)
+            radialMove = dirToEnemy * forwardInput * orbitalSpeed;
+
+        Vector3 desiredVelocity = lateralMove + radialMove;
+
+        // Assegura distància mínima
+        Vector3 nextPos = transform.position + desiredVelocity * Time.deltaTime;
+        Vector3 newToEnemy = target.position - nextPos; newToEnemy.y = 0f;
+        if (newToEnemy.magnitude < orbitalMinDist)
+            desiredVelocity = Vector3.zero;
+
+        // Mou directament via agent.velocity, sense SetDestination
+        agent.ResetPath();
+        agent.velocity = desiredVelocity;
+    }
+
+    private void FaceTarget(Transform target)
+    {
+        Vector3 dir = target.position - transform.position; dir.y = 0f;
+        if (dir.sqrMagnitude > 0.01f)
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.LookRotation(dir),
+                lockOnRotationSpeed * Time.deltaTime);
+    }
+
+    // ── OffMeshLink Traversal ─────────────────────────────────────────────────
 
     private IEnumerator TraverseLink()
     {
         traversingLink = true;
-
         OffMeshLinkData data = agent.currentOffMeshLinkData;
         Vector3 finalDestination = agent.destination;
+        float realDistance = Vector3.Distance(data.startPos, data.endPos);
+        float requiredSpeed = realDistance / (2f / moveSpeed);
 
-        float linkDistance = Vector3.Distance(data.startPos, data.endPos);
-        float traverseTime = linkDistance / linkSpeed;
-        float speed = linkDistance / traverseTime;
-
-        agent.speed = speed;
+        agent.speed = requiredSpeed;
         agent.autoTraverseOffMeshLink = true;
-
-        while (agent.isOnOffMeshLink)
-            yield return null;
+        while (agent.isOnOffMeshLink) yield return null;
 
         agent.velocity = Vector3.zero;
         agent.speed = moveSpeed;
         agent.autoTraverseOffMeshLink = false;
         agent.SetDestination(finalDestination);
-
         traversingLink = false;
     }
 
+    private void UpdateAnimator()
+    {
+        float speed = agent.velocity.magnitude;
+        animator.SetFloat("Speed", speed, 0.1f, Time.deltaTime);
+    }
 
-    //------------------------ CALLBACKS DE INPUTS ------------------------//
+    public void PlayThrowAnimation()
+    {
+        if (isThrowingAnimation) return;
+        StartCoroutine(ThrowAnimationRoutine());
+    }
 
-    private void OnMove(CallbackContext context) => moveInput = context.ReadValue<Vector2>();
-    private void OnLook(CallbackContext context) => lookInput = context.ReadValue<Vector2>();
+    private IEnumerator ThrowAnimationRoutine()
+    {
+        isThrowingAnimation = true;
 
+        float duration = 0.1f;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            animator.SetLayerWeight(ThrowLayerIndex, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+        animator.SetLayerWeight(ThrowLayerIndex, 1f);
+
+        animator.SetTrigger(ThrowTrigger);
+
+        yield return new WaitForSeconds(0.5f);
+
+        MinionManager.Instance?.ExecutePendingLaunch();
+
+        elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            animator.SetLayerWeight(ThrowLayerIndex, Mathf.Clamp01(1f - elapsed / duration));
+            yield return null;
+        }
+        animator.SetLayerWeight(ThrowLayerIndex, 0f);
+
+        isThrowingAnimation = false;
+    }
+
+
+    private void FaceTowardsCursor()
+    {
+        Vector3 dir = minionCursor.WorldPosition - transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude > 0.01f)
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.LookRotation(dir),
+                rotationSpeed * Time.deltaTime);
+    }
+
+
+
+    // ── Input callbacks (legacy, per compatibilitat) ──────────────────────────
+    private void OnMove(CallbackContext ctx) => moveInput = ctx.ReadValue<Vector2>();
+    private void OnLook(CallbackContext ctx) => lookInput = ctx.ReadValue<Vector2>();
 }

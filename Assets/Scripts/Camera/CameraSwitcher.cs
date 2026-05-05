@@ -6,7 +6,8 @@ public class CameraSwitcher : MonoBehaviour
 {
     //Player
     [Header("Player")]
-    [SerializeField] private PlayerStateMachine playerStateMachine; 
+    [SerializeField] private PlayerStateMachine playerStateMachine;
+    [SerializeField] private OrthoCursor orthoCursor; 
 
     //Cinemachine
     [Header("Cinemachine")]
@@ -173,6 +174,10 @@ public class CameraSwitcher : MonoBehaviour
 
         //Assegurem la posicio exacta al final
         orthoCam.transform.SetPositionAndRotation(targetPos.position, targetPos.rotation);
+        if (orthoCursor != null)
+        {
+            orthoCursor.RecalculateScreenPosition();
+        }
         transitionState = TransitionState.Idle;
     }
 
@@ -221,6 +226,10 @@ public class CameraSwitcher : MonoBehaviour
 
         Transform targetPos = currentZone.OrthoPositions[index];
         orthoCam.transform.SetPositionAndRotation(targetPos.position, targetPos.rotation);
+        if(orthoCursor != null)
+        {
+            orthoCursor.RecalculateScreenPosition();
+        }
     }
 
 

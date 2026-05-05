@@ -10,6 +10,8 @@ TagManager:
   - minion
   - meteorPart
   - pesa
+  - Enemy
+  - PlayerFollow
   layers:
   - Default
   - TransparentFX
@@ -19,8 +21,8 @@ TagManager:
   - UI
   - Ground
   - Cursor
-  - 
-  - 
+  - Enemy
+  - Obstacle
   - 
   - 
   - 
