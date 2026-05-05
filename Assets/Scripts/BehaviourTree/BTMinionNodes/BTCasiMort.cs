@@ -45,7 +45,7 @@ public class BTCasiMort : BTNode
                 minion.watchedEnemy = null;
                 minion.energy = 0f; // segueix amb 0 energia (Debilitat no necessita energia)
                 minion.ChangeState(MinionAI.MinionState.Debilitat);
-                if (minion.animator != null) minion.animator.SetTrigger("Debilitat");
+                if (minion.animator != null) minion.animator.SetTrigger("CasiMort");
                 return true;
             }
         }
@@ -53,7 +53,7 @@ public class BTCasiMort : BTNode
         {
             // No hi havia enemic vigilat (va caure per altra causa) → directament Debilitat
             minion.ChangeState(MinionAI.MinionState.Debilitat);
-            if (minion.animator != null) minion.animator.SetTrigger("Debilitat");
+            if (minion.animator != null) minion.animator.SetTrigger("CasiMort");
             return true;
         }
 

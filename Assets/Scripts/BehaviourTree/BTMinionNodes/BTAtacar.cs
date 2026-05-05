@@ -44,7 +44,7 @@ public class BTAtacar : BTNode
                     minion.attackTarget = null;
                     minion.energy = 0f;
                     minion.ChangeState(MinionAI.MinionState.Debilitat);
-                    if (minion.animator != null) minion.animator.SetTrigger("Debilitat");
+                    if (minion.animator != null) minion.animator.SetTrigger("CasiMort");
                 }
             }
             else

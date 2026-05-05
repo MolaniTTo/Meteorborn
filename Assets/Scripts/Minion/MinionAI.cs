@@ -11,6 +11,7 @@ public class MinionAI : MonoBehaviour
     // ── Referències ──────────────────────────────────────────────────────────
     [HideInInspector] public NavMeshAgent agent;
     [HideInInspector] public Animator animator;
+    [SerializeField] private Transform playerLook;
     [SerializeField] private Transform playerFollow;
     [SerializeField] private Transform playerThrow;
     public BTNode rootNode;
@@ -64,16 +65,38 @@ public class MinionAI : MonoBehaviour
     {
         playerTransform = FindFirstObjectByType<PlayerStateMachine>()?.playerFollowPosition;
         if (playerFollow == null && playerTransform != null)
+        {
             playerFollow = playerTransform;
+        }
         playerThrow = FindFirstObjectByType<PlayerStateMachine>()?.playerThrowPosition;
         if (playerThrow == null && playerTransform != null)
+        {
             playerThrow = playerTransform;
+        }
+        playerLook = FindFirstObjectByType<PlayerStateMachine>()?.transform;
+        if (playerLook == null && playerTransform != null)
+        {
+            playerLook = playerTransform;
+        }
     }
 
     void Update()
     {
         if (isFlying) return;
         if (agent.isOnOffMeshLink && !traversingLink) StartCoroutine(TraverseLink());
+
+        if (currentState == MinionState.Activat && playerLook != null)
+        {
+            Vector3 dir = (playerLook.position - transform.position);
+            dir.y = 0f;
+            if (dir.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(dir);
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation, targetRot, Time.deltaTime * 12f);
+            }
+        }
+
         rootNode?.Execute(this);
     }
 
@@ -111,6 +134,7 @@ public class MinionAI : MonoBehaviour
         nearDeathExpired = false;
         watchedEnemy = null;
         agent.enabled = true;
+        if (animator != null) animator.SetTrigger("Reactivate");
         ChangeState(MinionState.Activat);
     }
 
@@ -150,19 +174,21 @@ public class MinionAI : MonoBehaviour
         {
             if (agent.enabled && playerFollow != null)
                 agent.SetDestination(playerFollow.position);
+           
             yield return wait;
         }
     }
 
     // ── Vol parabòlic ────────────────────────────────────────────────────────
 
-    public void LaunchTo(Vector3 targetPos, float arcHeight = 3f, float duration = 0.6f)
+    public void LaunchTo(Vector3 targetPos, float arcHeight = 3f, float duration = 1.2f)
     {
         StartCoroutine(ArcFlight(targetPos, arcHeight, duration));
     }
 
     private IEnumerator ArcFlight(Vector3 targetPos, float arcHeight, float duration)
     {
+        animator.SetTrigger("Launch");
         isFlying = true;
         agent.enabled = false;
         Vector3 startPos = transform.position;
@@ -189,6 +215,7 @@ public class MinionAI : MonoBehaviour
 
     private void OnLanded()
     {
+        animator.SetTrigger("Land");
         Debug.Log($"[MinionAI] {name} ha aterrat");
         Collider[] hits = Physics.OverlapSphere(transform.position, 1.5f);
         foreach (Collider col in hits)
