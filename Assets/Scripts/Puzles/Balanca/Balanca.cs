@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Balanca : MonoBehaviour
 {
@@ -6,6 +7,8 @@ public class Balanca : MonoBehaviour
     [SerializeField] PlataformaBalanca plataformaBalanca2;
 
     [SerializeField] Transform rotadorBalanca;
+
+    [SerializeField] UnityEvent consequencia;
 
     private float rotacioObjectiu = 0f;
     private bool actualitzant = false;
@@ -39,7 +42,7 @@ public class Balanca : MonoBehaviour
 
         if (plataformaBalanca1.pess != 0f && plataformaBalanca1.pess == plataformaBalanca2.pess)
         {
-            Debug.Log("Aniol");
+            consequencia.Invoke();
         }
     }
 }
