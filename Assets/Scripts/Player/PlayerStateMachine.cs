@@ -9,6 +9,7 @@ public class PlayerStateMachine : MonoBehaviour
     // ── Enums ─────────────────────────────────────────────────────────────────
     public enum PlayerViewMode { ThirdPerson, OrthographicView }
     public enum PlayerState { Idle, Walking, OrthoIdle, OrthoMoving, LockOnIdle, LockOnMoving }
+    public PlayerViewMode CurrentViewMode => playerViewMode;
 
     // ── Input System ──────────────────────────────────────────────────────────
     private InputSystem_Actions inputActions;
