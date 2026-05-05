@@ -31,6 +31,9 @@ public class LockOnSystem : MonoBehaviour
     [Header("Referència al player")]
     [SerializeField] private Transform playerTransform;
 
+    [Header("Referència al sistema de càmera")]
+    [SerializeField] private CameraSwitcher cameraSwitcher;
+
     // ── Estat intern ──────────────────────────────────────────────────────────
     private Transform lockedTarget = null;
     private bool isLockedOn = false;
@@ -68,6 +71,7 @@ public class LockOnSystem : MonoBehaviour
 
     private void OnLockOnStarted(InputAction.CallbackContext ctx)
     {
+        if (cameraSwitcher != null && cameraSwitcher.IsOrthoMode) return;
         TryAcquireLockOn(); // LB premut → intenta fixar un enemic 
     }
 

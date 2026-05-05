@@ -12,6 +12,7 @@ TagManager:
   - pesa
   - Enemy
   - PlayerFollow
+  - DroneFollow
   layers:
   - Default
   - TransparentFX
