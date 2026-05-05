@@ -8,6 +8,10 @@ public class BTActivat : BTNode
     public override bool Execute(MinionAI minion)
     {
         if (minion.currentState != MinionAI.MinionState.Activat) return false;
+
+        if (minion.animator != null)
+            minion.animator.SetBool("IsCurious", false);
+
         minion.agent.isStopped = false;
         if (minion.animator != null)
             minion.animator.SetBool("IsMoving", minion.agent.velocity.sqrMagnitude > 0.1f);

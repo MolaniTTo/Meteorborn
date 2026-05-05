@@ -1947,7 +1947,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de0a8967e8bb29146948a572aa422310, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minionPrefab: {fileID: 8920918428044089814, guid: 45aba28dff13a0346a1b062cf748e902, type: 3}
+  minionPrefab: {fileID: 1099803106510792421, guid: ac0d3b8a30f15594ea491d74c8fcb6e3, type: 3}
   spawnVFX: {fileID: 0}
   spawnedMinion: {fileID: 0}
 --- !u!4 &312088534
@@ -3819,7 +3819,7 @@ MonoBehaviour:
   activationRadius: 2
   reactivationRadius: 2
   launchArcHeight: 3
-  launchDuration: 0.6
+  launchDuration: 1.02
   player: {fileID: 2416464619303331492}
   allMinions: []
   activeMinions: []
@@ -3867,7 +3867,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de0a8967e8bb29146948a572aa422310, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minionPrefab: {fileID: 8920918428044089814, guid: 45aba28dff13a0346a1b062cf748e902, type: 3}
+  minionPrefab: {fileID: 1099803106510792421, guid: ac0d3b8a30f15594ea491d74c8fcb6e3, type: 3}
   spawnVFX: {fileID: 0}
   spawnedMinion: {fileID: 0}
 --- !u!4 &894246448

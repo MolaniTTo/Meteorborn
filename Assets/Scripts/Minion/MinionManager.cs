@@ -21,7 +21,7 @@ public class MinionManager : MonoBehaviour
 
     [Header("Llançament")]
     public float launchArcHeight = 3f;
-    public float launchDuration = 0.6f;
+    public float launchDuration = 1.2f;
 
     public PlayerStateMachine player;
 
