@@ -5,6 +5,11 @@ TagManager:
   serializedVersion: 3
   tags:
   - Interactable
+  - PlayerFollowPoint
+  - Drone
+  - minion
+  - meteorPart
+  - pesa
   - Enemy
   - PlayerFollow
   layers:
