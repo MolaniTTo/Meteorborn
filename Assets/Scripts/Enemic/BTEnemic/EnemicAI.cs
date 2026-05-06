@@ -31,6 +31,11 @@ public class EnemicAI : MonoBehaviour
     public LayerMask obstacleMask;
     [Tooltip("Transform del cap del enemic, d'on surten els raigs de visió")]
     public Transform eyeTransform;
+    
+    [HideInInspector] public bool hasScreamed = false;
+    [HideInInspector] public bool isScreaming = false;
+    [SerializeField] private float screamDuration = 1.5f;
+    private float screamTimer = 0f;
 
     // ── Energia ───────────────────────────────────────────────────────────────
     [Header("Energia")]
@@ -71,6 +76,7 @@ public class EnemicAI : MonoBehaviour
 
     // ─────────────────────────────────────────────────────────────────────────
 
+
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -86,7 +92,8 @@ public class EnemicAI : MonoBehaviour
         FollowGhost();
         UpdateAnimator();
         UpdateHealing();
-        UpdateFaceAttackers(); 
+        UpdateFaceAttackers();
+        UpdateScream();
         rootNode?.Execute(this);
     }
 
@@ -311,8 +318,32 @@ public class EnemicAI : MonoBehaviour
         if (targetHealth == null || targetHealth.IsDead()) return;
         targetHealth.TakeDamage(damagedEnergiaPerSecond);
     }
+
+    public void TriggerScream()
+    {
+        if (hasScreamed) return;
+        hasScreamed = true;
+        isScreaming = true;
+        screamTimer = screamDuration;
+        animator.SetTrigger("Scream");
+    }
+    private void UpdateScream()
+    {
+        if (!isScreaming) return;
+        screamTimer -= Time.deltaTime;
+        StopGhost();
+        if (screamTimer <= 0f)
+            isScreaming = false;
+    }
+    public void LoseTarget()
+    {
+        targetHealth = null;
+        hasScreamed = false;
+    }
+
     private void OnDeath()
     {
+        Debug.Log($"{gameObject.name} ha mort.");
         animator.SetTrigger("Mort");
         agent.enabled = false;
         ghostAgent.enabled = false;

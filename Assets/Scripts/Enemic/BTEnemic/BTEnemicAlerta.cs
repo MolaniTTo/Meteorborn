@@ -9,12 +9,19 @@ public class BTEnemicAlerta : BTNodeEnemic
 {
     public override bool Execute(EnemicAI enemic)
     {
+        if (enemic.isScreaming)
+        {
+            enemic.FaceTarget(enemic.targetHealth.transform.position);
+            return true; // sigue en este nodo pero sin moverse
+        }
+
         HealthComponent alerted = enemic.CheckAlertRadius();
         if (alerted == null) return false;
 
         // Assigna com a target i para el ghost
         enemic.targetHealth = alerted;
         enemic.StopGhost();
+        enemic.TriggerScream();
         enemic.FaceTarget(alerted.transform.position);
 
         return true;

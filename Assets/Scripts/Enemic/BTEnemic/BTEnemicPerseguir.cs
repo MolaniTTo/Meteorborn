@@ -9,6 +9,12 @@ public class BTEnemicPerseguir : BTNodeEnemic
 {
     public override bool Execute(EnemicAI enemic)
     {
+        if (enemic.isScreaming)
+        {
+            enemic.FaceTarget(enemic.targetHealth.transform.position);
+            return true;
+        }
+
         if (enemic.targetHealth != null && !enemic.targetHealth.IsDead())
         {
             float distToGuard = Vector3.Distance(enemic.transform.position, enemic.guardPoint.position);
@@ -17,7 +23,7 @@ public class BTEnemicPerseguir : BTNodeEnemic
             {
                 if (enemic.energia > enemic.maxEnergia * 0.5f)
                     enemic.searchTimer = enemic.searchDuration;
-                enemic.targetHealth = null;
+                enemic.LoseTarget();
                 return false;
             }
 
@@ -33,6 +39,7 @@ public class BTEnemicPerseguir : BTNodeEnemic
 
         enemic.targetHealth = spotted;
         enemic.lastSeenPosition = spotted.transform.position;
+        enemic.TriggerScream();
         enemic.MoveGhostTo(spotted.transform.position);
         return true;
     }

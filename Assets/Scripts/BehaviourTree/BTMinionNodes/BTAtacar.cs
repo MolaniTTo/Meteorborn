@@ -20,6 +20,7 @@ public class BTAtacar : BTNode
 
         if (dist > minion.attackRange) //si la distanciancia al objectiu d'atac es major que el rang d'atac, es mou cap a ell
         {
+            if (minion.animator != null) minion.animator.SetBool("Attack", false);
             minion.agent.isStopped = false;
             minion.agent.SetDestination(minion.attackTarget.position);
             if (minion.animator != null) minion.animator.SetBool("IsMoving", true);
@@ -28,6 +29,7 @@ public class BTAtacar : BTNode
         {
             minion.agent.isStopped = true;
             if (minion.animator != null) minion.animator.SetBool("IsMoving", false);
+            if (minion.animator != null) minion.animator.SetBool("Attack", true);
 
             EnemicAI enemic = minion.attackTarget.GetComponent<EnemicAI>();
             if (enemic != null) enemic.RegisterAttacker(minion.transform);
@@ -47,7 +49,6 @@ public class BTAtacar : BTNode
                         Quaternion.LookRotation(dir),
                         Time.deltaTime * 10f);
 
-                if (minion.animator != null) minion.animator.SetTrigger("Attack");
 
                 if (enemyHealth.IsDead())
                 {

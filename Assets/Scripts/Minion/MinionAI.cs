@@ -216,11 +216,15 @@ public class MinionAI : MonoBehaviour
     private void OnLanded()
     {
         animator.SetTrigger("Land");
+
+        if (MinionManager.Instance?.GetPendingLaunch() == this)
+            MinionManager.Instance.ClearPendingLaunch();
+
         Debug.Log($"[MinionAI] {name} ha aterrat");
         Collider[] hits = Physics.OverlapSphere(transform.position, 1.5f);
         foreach (Collider col in hits)
         {
-            if (col.CompareTag("Enemy")) { AssignAttackTarget(col.transform); return; }
+            if (col.CompareTag("Enemy") && col.GetComponent<HealthComponent>().currentHealth > 0) { AssignAttackTarget(col.transform); return; }
             CarryObject carry = col.GetComponent<CarryObject>();
             if (carry != null) { AssignCarryObject(carry); return; }
         }
