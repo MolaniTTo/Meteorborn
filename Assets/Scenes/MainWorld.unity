@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 133188852}
   - component: {fileID: 133188857}
   - component: {fileID: 133188858}
+  - component: {fileID: 133188859}
   m_Layer: 0
   m_Name: Capsule
   m_TagString: Player
@@ -296,6 +297,14 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.34
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!81 &133188859
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 133188851}
+  m_Enabled: 1
 --- !u!1001 &366281160
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1439,7 +1448,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1371292613}
   - component: {fileID: 1371292612}
-  - component: {fileID: 1371292611}
   - component: {fileID: 1371292614}
   - component: {fileID: 1371292615}
   m_Layer: 0
@@ -1449,14 +1457,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1371292611
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1371292610}
-  m_Enabled: 1
 --- !u!20 &1371292612
 Camera:
   m_ObjectHideFlags: 0
@@ -2380,6 +2380,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3646427395707338023, guid: a23debf5e877fc84292b0e895687a95a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5800702530773102318, guid: a23debf5e877fc84292b0e895687a95a, type: 3}
+      propertyPath: Pan2D
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5800702530773102318, guid: a23debf5e877fc84292b0e895687a95a, type: 3}
+      propertyPath: spreadCustomCurve.m_Curve.Array.data[0].value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5800702530773102318, guid: a23debf5e877fc84292b0e895687a95a, type: 3}
+      propertyPath: panLevelCustomCurve.m_Curve.Array.data[0].value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5800702530773102318, guid: a23debf5e877fc84292b0e895687a95a, type: 3}
+      propertyPath: reverbZoneMixCustomCurve.m_Curve.Array.data[0].value
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

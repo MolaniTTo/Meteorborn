@@ -3,6 +3,10 @@ using UnityEngine.Events;
 
 public class Balanca : MonoBehaviour
 {
+    /*
+    El Puzzle de la balança de moment a de ser obligadament de 2 pesos de 4kg 1 de 6kg i 3 de 2kg
+    */
+
     [SerializeField] PlataformaBalanca plataformaBalanca1;
     [SerializeField] PlataformaBalanca plataformaBalanca2;
 
