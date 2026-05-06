@@ -29,18 +29,30 @@ public class BTAtacar : BTNode
             minion.agent.isStopped = true;
             if (minion.animator != null) minion.animator.SetBool("IsMoving", false);
 
-            EnemyHealth enemyHealth = minion.attackTarget.GetComponent<EnemyHealth>();
-            if (enemyHealth != null)
+            EnemicAI enemic = minion.attackTarget.GetComponent<EnemicAI>();
+            if (enemic != null) enemic.RegisterAttacker(minion.transform);
+
+            HealthComponent enemyHealth = minion.attackTarget.GetComponent<HealthComponent>();
+            if (enemyHealth != null && enemyHealth.IsTargetableByMinion)
             {
                 float drain = minion.energyDrainPerSecond * Time.deltaTime;
                 enemyHealth.TakeDamage(drain);
                 minion.energy = Mathf.Min(minion.maxEnergy, minion.energy + drain);
+
+                Vector3 dir = minion.attackTarget.position - minion.transform.position;
+                dir.y = 0f;
+                if (dir.sqrMagnitude > 0.01f)
+                    minion.transform.rotation = Quaternion.Slerp(
+                        minion.transform.rotation,
+                        Quaternion.LookRotation(dir),
+                        Time.deltaTime * 10f);
 
                 if (minion.animator != null) minion.animator.SetTrigger("Attack");
 
                 if (enemyHealth.IsDead())
                 {
                     // L'enemic ha mort → Debilitat (esgotat per la lluita)
+                    if (enemic != null) enemic.UnregisterAttacker(minion.transform);
                     minion.attackTarget = null;
                     minion.energy = 0f;
                     minion.ChangeState(MinionAI.MinionState.Debilitat);

@@ -4844,8 +4844,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1843703968585966408}
   - component: {fileID: 7373063285856731816}
-  - component: {fileID: 2557618962691185377}
   - component: {fileID: 4263254417278220481}
+  - component: {fileID: 2557618962691185377}
   m_Layer: 0
   m_Name: Enemic
   m_TagString: Untagged
@@ -4893,26 +4893,6 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &2557618962691185377
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7126469200300863275}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 89dcfa8bd8dd28247af14c6895bd1057, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  guardPoint: {fileID: 0}
-  speed: 3
-  guardDistance: 10
-  energia: 2
-  perseguint: {fileID: 0}
-  minionDintreRadi: {fileID: 0}
-  nextPoint: {x: 0, y: 0, z: 0}
-  agent: {fileID: 0}
 --- !u!135 &4263254417278220481
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -4934,6 +4914,28 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 7
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2557618962691185377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7126469200300863275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89dcfa8bd8dd28247af14c6895bd1057, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  guardPoint: {fileID: 0}
+  speed: 3
+  targetSpeed: 3.5
+  guardDistance: 10
+  energia: 2
+  perseguint: {fileID: 0}
+  minionDintreRadi: {fileID: 0}
+  nextPoint: {x: 0, y: 0, z: 0}
+  agent: {fileID: 0}
+  fantasmaAgent: {fileID: 0}
 --- !u!1 &7946844690866389948
 GameObject:
   m_ObjectHideFlags: 0

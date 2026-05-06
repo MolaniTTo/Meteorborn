@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 020c0230bf2003142b95f0c084c1ee9a, type: 3}
+  m_Name: BTSelectorEnemic
+  m_EditorClassIdentifier: 
+  children:
+  - {fileID: 11400000, guid: de159f9335509d0479b97c11986625c9, type: 2}
+  - {fileID: 11400000, guid: 4a65270a459759d4fa56e8733aee2a1a, type: 2}
+  - {fileID: 11400000, guid: 4de86692946d0a84db7d19059e75e2fe, type: 2}
+  - {fileID: 11400000, guid: 68c355a42fa72604b9919510eb88900c, type: 2}
+  - {fileID: 11400000, guid: 5b51a50c2d4f36a4c919d53ede77403c, type: 2}
+  - {fileID: 11400000, guid: cdefa819989389f4f8f50965745a15da, type: 2}
