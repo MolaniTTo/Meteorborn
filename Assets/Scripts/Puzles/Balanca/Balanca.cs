@@ -9,9 +9,15 @@ public class Balanca : MonoBehaviour
     [SerializeField] Transform rotadorBalanca;
 
     [SerializeField] UnityEvent consequencia;
+    [SerializeField] AudioClip stoneSlideSound;
+    private AudioSource audioSource;
 
     private float rotacioObjectiu = 0f;
     private bool actualitzant = false;
+
+    private void Start() {
+        audioSource = gameObject.GetComponent<AudioSource>();
+    }
 
     void Update()
     {
@@ -25,10 +31,19 @@ public class Balanca : MonoBehaviour
                 3f * Time.deltaTime
             );
 
+            if (!audioSource.isPlaying)
+            {
+                audioSource.clip = stoneSlideSound;
+                audioSource.Play();
+            }
+
             if (Quaternion.Angle(rotadorBalanca.rotation, rotacioFinal) < 0.1f)
             {
+                audioSource.Stop();
+
                 actualitzant = false;
             }
+
         }
     }
 
@@ -40,7 +55,7 @@ public class Balanca : MonoBehaviour
 
         actualitzant = true;
 
-        if (plataformaBalanca1.pess != 0f && plataformaBalanca1.pess == plataformaBalanca2.pess)
+        if (plataformaBalanca1.pess == 10f && plataformaBalanca2.pess == 10f)
         {
             consequencia.Invoke();
         }
