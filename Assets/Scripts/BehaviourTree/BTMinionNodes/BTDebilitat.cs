@@ -10,7 +10,13 @@ public class BTDebilitat : BTNode
     {
         if (minion.currentState != MinionAI.MinionState.Debilitat) return false;
         minion.agent.isStopped = true;
-        if (minion.animator != null) minion.animator.SetBool("IsMoving", false);
+        if (minion.animator != null)
+        {
+            minion.animator.SetBool("IsMoving", false);
+            minion.animator.SetBool("Attack", false);
+        }
+
         return true;
+
     }
 }
