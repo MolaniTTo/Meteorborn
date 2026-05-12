@@ -14,11 +14,14 @@ public class Pajaro : MonoBehaviour
     private Rigidbody rigidBody;
     private float timeOutPunto = 0f;
 
+    private AudioSource audioSource;
+
 
     private void Start() {
         animator = gameObject.GetComponentInChildren<Animator>();
         playerTransform = GameObject.FindWithTag("Player").transform;
         rigidBody = gameObject.GetComponent<Rigidbody>();
+        audioSource = gameObject.GetComponent<AudioSource>();
 
 
         estado = "idle";
@@ -74,6 +77,8 @@ public class Pajaro : MonoBehaviour
             
             animator.SetBool("fly", true);
             animator.SetBool("walk", false);
+
+            audioSource.Play();
         }
         else if (Random.Range(0f, 100f) > 60f) //Idle
         {
@@ -82,6 +87,8 @@ public class Pajaro : MonoBehaviour
 
             animator.SetBool("fly", false);
             animator.SetBool("walk", false);
+
+            audioSource.Stop();
         }
         else if (Random.Range(0f, 100f) > 60f) //Walk
         {
@@ -90,6 +97,8 @@ public class Pajaro : MonoBehaviour
 
             animator.SetBool("fly", false);
             animator.SetBool("walk", true);
+
+            audioSource.Stop();
         }
 
         if (Vector3.Distance(transform.position, playerTransform.position) > 100)

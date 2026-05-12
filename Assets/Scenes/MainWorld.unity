@@ -119,6 +119,63 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1001 &121034349
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 476.19925
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.000015258789
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 472.6975
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2055811989270839119, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_Name
+      value: Pajarraco (6)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
 --- !u!1 &133188851
 GameObject:
   m_ObjectHideFlags: 0
@@ -476,6 +533,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 133188856}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &690839732
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 468.47968
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.621
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 470.14783
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2055811989270839119, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_Name
+      value: Pajarraco (4)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
 --- !u!1001 &734785202
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1751,6 +1865,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 87ee54dbbd0e4ee4eacf40f6d99c2a02, type: 3}
+--- !u!1001 &1427801039
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 467.26782
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.000017166138
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 478.33646
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2055811989270839119, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_Name
+      value: Pajarraco (7)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
 --- !u!4 &1477412056 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4607441317786348350, guid: 87ee54dbbd0e4ee4eacf40f6d99c2a02, type: 3}
@@ -2210,6 +2381,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fee326cabb773bc42a0774f1e005c8b4, type: 3}
+--- !u!1001 &1851306187
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 481.13287
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.000011444092
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 463.37704
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1718990790047559162, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2055811989270839119, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
+      propertyPath: m_Name
+      value: Pajarraco (5)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 703458b75e8a8b2428591c1a5aa77b1d, type: 3}
 --- !u!1001 &1854058941
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2779,3 +3007,7 @@ SceneRoots:
   - {fileID: 1619651302}
   - {fileID: 478491769}
   - {fileID: 871653446}
+  - {fileID: 121034349}
+  - {fileID: 1851306187}
+  - {fileID: 1427801039}
+  - {fileID: 690839732}
