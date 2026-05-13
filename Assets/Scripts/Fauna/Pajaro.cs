@@ -70,7 +70,7 @@ public class Pajaro : MonoBehaviour
 
     private void SlowUpdate()
     {
-        if (Random.Range(0f, 100f) > 10f) //Fly
+        if (Random.Range(0f, 100f) > 20f) //Fly
         {
             estado = "fly";
             rigidBody.useGravity = false;
@@ -90,7 +90,7 @@ public class Pajaro : MonoBehaviour
 
             audioSource.Stop();
         }
-        else if (Random.Range(0f, 100f) > 60f) //Walk
+        else if (Random.Range(0f, 100f) > 100f) //Walk
         {
             estado = "walk";
             rigidBody.useGravity = true;
