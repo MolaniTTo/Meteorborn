@@ -1,16 +1,17 @@
-﻿// ── 6. PATRULLAR (Fallback) ───────────────────────────────────────────────────
-// Fallback quan no passa res. Mou el ghost entre punts aleatoris dins del
-// patrolRadius al voltant del guardPoint, adaptant-se al NavMesh disponible.
-using UnityEngine;
+﻿using UnityEngine;
 
+// ── 6. PATRULLAR (Fallback) ───────────────────────────────────────────────────
 [CreateAssetMenu(fileName = "BTEnemicPatrullar", menuName = "BehaviourTree/Enemic/Patrullar")]
 public class BTEnemicPatrullar : BTNodeEnemic
 {
     public override bool Execute(EnemicAI enemic)
     {
-        enemic.isHealing = false; // reset per si de cas
+        enemic.GetComponent<EnemicAIDebug>()?.SetActiveNode("PATRULLAR");
+
+        enemic.isHealing = false;
+        enemic.SetAttackAnimation(false);
         enemic.MoveGhostTo(enemic.GetPatrolPoint());
-        enemic.HasReachedPatrolPoint(); // genera nou punt si ha arribat
+        enemic.HasReachedPatrolPoint();
         return true;
     }
 }
