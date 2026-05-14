@@ -9,8 +9,16 @@ public class BTDebilitat : BTNode
     public override bool Execute(MinionAI minion)
     {
         if (minion.currentState != MinionAI.MinionState.Debilitat) return false;
-        minion.agent.isStopped = true;
-        if (minion.animator != null) minion.animator.SetBool("IsMoving", false);
+        if (minion.agent.enabled)
+            minion.agent.isStopped = true;
+        if (minion.animator != null)
+        {
+            minion.animator.SetBool("IsMoving", false);
+            minion.animator.SetBool("Attack", false);
+        }
+        if (!minion.isAtMinScale) { minion.SetMinScale(); }
+
         return true;
+
     }
 }

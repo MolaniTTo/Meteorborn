@@ -28,6 +28,9 @@ public class MinionManager : MonoBehaviour
     private MinionAI pendingLaunch = null;
     private Vector3 pendingLaunchTarget;
 
+    private float pendingLaunchTimer = 0f;
+    private const float maxPendingTime = 5f;
+
     // ── Llistes internes ──────────────────────────────────────────────────────
     [SerializeField] private List<MinionAI> allMinions = new List<MinionAI>();
     [SerializeField] private List<MinionAI> activeMinions = new List<MinionAI>();
@@ -35,6 +38,13 @@ public class MinionManager : MonoBehaviour
     // ── Highlight: minion sota el cursor pendent de confirmar ─────────────────
     private MinionAI pendingMinion = null;   // el que el cursor té a sobre
     private bool pendingIsReactivation = false;
+
+    public MinionAI GetPendingLaunch() => pendingLaunch;
+
+    public void ClearPendingLaunch()
+    {
+        pendingLaunch = null;
+    }
 
     void Awake()
     {
@@ -44,6 +54,21 @@ public class MinionManager : MonoBehaviour
 
     void Update()
     {
+        if (pendingLaunch != null)
+        {
+            pendingLaunchTimer += Time.deltaTime;
+            if (pendingLaunchTimer > maxPendingTime)
+            {
+                Debug.LogWarning("[MinionManager] pendingLaunch timeout, netejant");
+                pendingLaunch = null;
+                pendingLaunchTimer = 0f;
+            }
+        }
+        else
+        {
+            pendingLaunchTimer = 0f;
+        }
+
         if (cursor == null || !cursor.IsActive)
         {
             ClearPending();
@@ -200,6 +225,7 @@ public class MinionManager : MonoBehaviour
         if (pendingLaunch == null) return;
         pendingLaunch.LaunchTo(pendingLaunchTarget, launchArcHeight, launchDuration);
         pendingLaunch = null;
+        pendingLaunchTimer = 0f;
     }
 
     // ────────────────────────────────────────────────────────────────────────

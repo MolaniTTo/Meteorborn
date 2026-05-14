@@ -1,4 +1,4 @@
-using System.Collections;
+Ôªøusing System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -22,11 +22,11 @@ public class CameraSwitcher : MonoBehaviour
 
     //Transition settings
     [Header("Transition Settings")]
-    [SerializeField] private float fovTransitionSpeed = 3f; //Velocitat a la que es fa la transiciÛ del FOV quan canvia de c‡mera, per suavitzar el canvi i evitar canvis bruscos que puguin molestar al jugador
+    [SerializeField] private float fovTransitionSpeed = 3f; //Velocitat a la que es fa la transici√≥ del FOV quan canvia de c√†mera, per suavitzar el canvi i evitar canvis bruscos que puguin molestar al jugador
     [SerializeField] private float maxFOV = 115f;           //FOV maxim que s'aplica a la camara en perspectiva per fer la transicio mes dramatica i que no sembli un canvi brusc
-    [SerializeField] private float blendDuration = 1.5f;    //DuraciÛ del blend entre c‡meres, per suavitzar el canvi i evitar canvis bruscos que puguin molestar al jugador
-    [SerializeField] private float perspectiveFOV = 60f;    //FOV default de la camara en perspectiva, per tornar a aquest valor quan es torna a la camara en perspectiva desprÈs d'haver passat por una zona de camara ortografica
-    [SerializeField] private float orthoMoveSpeed = 2f;     //Velocitat del desplaÁament entre posicions ortho
+    [SerializeField] private float blendDuration = 1.5f;    //Duraci√≥ del blend entre c√†meres, per suavitzar el canvi i evitar canvis bruscos que puguin molestar al jugador
+    [SerializeField] private float perspectiveFOV = 60f;    //FOV default de la camara en perspectiva, per tornar a aquest valor quan es torna a la camara en perspectiva despr√©s d'haver passat por una zona de camara ortografica
+    [SerializeField] private float orthoMoveSpeed = 2f;     //Velocitat del despla√ßament entre posicions ortho
 
     //Input
     private InputSystem_Actions inputActions;
@@ -41,9 +41,10 @@ public class CameraSwitcher : MonoBehaviour
         ShrinkingFOV 
     }
 
+
     private TransitionState transitionState = TransitionState.Idle;
     private bool isOrthoMode = false;           //Default esta en perspectiva tercera persona
-
+    public bool IsOrthoMode => isOrthoMode;
 
     //Zona de la camara
     private CameraZone currentZone;     //Zona activa actual (null si no hi ha cap)
@@ -107,7 +108,7 @@ public class CameraSwitcher : MonoBehaviour
 
     public void ExitZone(CameraZone zone)
     {
-        //Nomes netejem a null si sortim de la zona que estava activa, per evitar que si tenim zones superposades i sortim d'una de les zones, es netegin les dades encara que estiguem en una altra zona que si permet ortho. D'aquesta manera, nomÈs quan sortim de la zona activa actual, es netegen les dades i es torna a perspectiva si est‡vem en ortho. Si sortim d'una zona que no Ès l'actual, no fem res perquË encara estem dins de la zona activa i les dades segueixen sent v‡lides. AixÚ permet tenir zones superposades amb diferents configuracions de c‡mera sense que es interfereixin entre elles quan el jugador entra o surt de les zones.
+        //Nomes netejem a null si sortim de la zona que estava activa, per evitar que si tenim zones superposades i sortim d'una de les zones, es netegin les dades encara que estiguem en una altra zona que si permet ortho. D'aquesta manera, nom√©s quan sortim de la zona activa actual, es netegen les dades i es torna a perspectiva si est√†vem en ortho. Si sortim d'una zona que no √©s l'actual, no fem res perqu√® encara estem dins de la zona activa i les dades segueixen sent v√†lides. Aix√≤ permet tenir zones superposades amb diferents configuracions de c√†mera sense que es interfereixin entre elles quan el jugador entra o surt de les zones.
         if (currentZone != zone) { return; }
 
         currentZone = null;
@@ -185,6 +186,8 @@ public class CameraSwitcher : MonoBehaviour
 
     private void StartSwitchToOrtho()
     {
+        if (LockOnSystem.Instance != null && LockOnSystem.Instance.IsLockedOn) { LockOnSystem.Instance.LoseLockOn(); }
+
         //Configura a la camara ortografica les dades de la zona
         var orthoLens = orthoCam.Lens;
         orthoLens.OrthographicSize = currentZone.ZoneData.orthographicSize;
@@ -200,7 +203,7 @@ public class CameraSwitcher : MonoBehaviour
     {
         if (playerOverlayCamera != null) { playerOverlayCamera.gameObject.SetActive(false); }
 
-        //Fa el blend entre c‡meres, configurant el blend per que sigui mes dramatic i no sembli un canvi brusco, i torna al FOV default de la camara en perspectiva
+        //Fa el blend entre c√†meres, configurant el blend per que sigui mes dramatic i no sembli un canvi brusco, i torna al FOV default de la camara en perspectiva
         brain.DefaultBlend = new CinemachineBlendDefinition(
             CinemachineBlendDefinition.Styles.EaseInOut,
             blendDuration
@@ -271,14 +274,10 @@ public class CameraSwitcher : MonoBehaviour
             resetLens.FieldOfView = perspectiveFOV;
             perspectiveCam.Lens = resetLens;
 
-            if (playerOverlayCamera != null)
-            {
-                playerOverlayCamera.gameObject.SetActive(true);
-            }
 
             playerStateMachine.SetViewMode(PlayerStateMachine.PlayerViewMode.OrthographicView); //Notifiquem al PST que estem en orthographic
             isOrthoMode = true;
-            transitionState = TransitionState.Idle;
+            transitionState = TransitionState.BlendingPosition;
         }
     }
 
@@ -286,9 +285,23 @@ public class CameraSwitcher : MonoBehaviour
     {
         if (brain.ActiveBlend == null)
         {
-            transitionState = TransitionState.ShrinkingFOV;
+            if (!isOrthoMode) // viene de ortho ‚Üí perspectiva
+            {
+                transitionState = TransitionState.ShrinkingFOV;
+            }
+
+            else
+            {
+                if (playerOverlayCamera != null)
+                {
+                    playerOverlayCamera.gameObject.SetActive(true);
+                }
+
+                transitionState = TransitionState.Idle;
+            }
         }
-            
+      
+
     }
 
     private void ShrinkFOVToNormal() //De ortografica a perspectiva

@@ -83,6 +83,9 @@ public class MovablePlatform : MonoBehaviour
             RebakeNavMesh();            // Rebake del NavMesh si té NavMeshSurface
             GameManager.instance.EvaluateConditions();  // Avaluem condicions
             isMoving = false;
+
+            UniqueID uid = GetComponent<UniqueID>();
+            if (uid != null) { WorldManager.Instance?.RegisterMovedObject(uid.ID, transform.position, transform.rotation); }
         });
     }
 

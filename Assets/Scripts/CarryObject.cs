@@ -117,6 +117,9 @@ public class CarryObject : MonoBehaviour
     {
         isDelivered = true;
 
+        UniqueID uid = GetComponent<UniqueID>();
+        if (uid != null) { WorldManager.Instance?.RegisterMovedObject(uid.ID, transform.position, transform.rotation); }
+
         // Allibera els minions (desapareixen en núvol de fum)
         foreach (MinionAI minion in assignedMinions)
         {

@@ -22,6 +22,9 @@ public class MinionCursor : MonoBehaviour
     [Header("Càmera en mode cursor (Cinemachine)")]
     [SerializeField] private CinemachineInputAxisController cinemachineInput;
 
+    [Header("Referència a la Cam i al Player")]
+    [SerializeField] private PlayerStateMachine playerStateMachine;
+
     // ── Estat intern ──────────────────────────────────────────────────────────
     private bool isCursorActive = false;
     private bool isOnLockMode = false; //per saber quan esta amb un enemic lockejat
@@ -56,6 +59,12 @@ public class MinionCursor : MonoBehaviour
 
     void Update()
     {
+        if(playerStateMachine != null && playerStateMachine.CurrentViewMode == PlayerStateMachine.PlayerViewMode.OrthographicView)
+        {
+            if(isCursorActive) ExitCursorMode();
+            return;
+        }
+
         bool ltHeld = leftTrigger.ReadValue<float>() > 0.5f;
         bool hasLockOn = LockOnSystem.Instance != null && LockOnSystem.Instance.IsLockedOn;
 

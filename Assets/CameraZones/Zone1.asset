@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Zone1
   m_EditorClassIdentifier: 
   allowOrthoMode: 1
-  orthographicSize: 12
+  orthographicSize: 25
