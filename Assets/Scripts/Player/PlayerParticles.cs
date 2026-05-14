@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Rendering;
 
 
 public class PlayerParticles : MonoBehaviour
@@ -6,8 +7,11 @@ public class PlayerParticles : MonoBehaviour
     public static PlayerParticles Instance { get; private set; }
 
     [Header("Particules de llum")]
-    [SerializeField] private int numberOfParticles = 20;  
+    public int numberOfParticles = 20;  
     [SerializeField] private int maxParticles = 200;
+    public int numberOfRedParticles = 0; //Partícules vermelles, encara no implementades
+
+
 
     void Awake()
     {
@@ -36,6 +40,7 @@ public class PlayerParticles : MonoBehaviour
         numberOfParticles = Mathf.Min(numberOfParticles + amount, maxParticles);
         OnParticlesChanged();
     }
+
 
     private void OnParticlesChanged()
     {

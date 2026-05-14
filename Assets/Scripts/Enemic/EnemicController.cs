@@ -23,7 +23,7 @@ public class EnemicController : MonoBehaviour
 
     void Start()
     {
-        Invoke("GenerarPoint", 10f);
+        //Invoke("GenerarPoint", 10f);
         agent = GetComponent<NavMeshAgent>();
         GenerarPoint();
 
@@ -35,8 +35,10 @@ public class EnemicController : MonoBehaviour
 
     void Update()
     {
+        if (perseguint != null && !perseguint.activeInHierarchy) { perseguint = null; }
         //Pasar parametres al Animator
-        speed = Mathf.Abs(agent.velocity[0] + agent.velocity[1] + agent.velocity[2]);
+        //speed = Mathf.Abs(agent.velocity[0] + agent.velocity[1] + agent.velocity[2]);
+        speed = agent.velocity.magnitude; //Velocitat total del agent
         animator.SetFloat("speed", speed);
         animator.SetBool("attack", false);
 
@@ -44,7 +46,6 @@ public class EnemicController : MonoBehaviour
         if ( Vector3.Distance(transform.position, guardPoint.position) > guardDistance) //Esta lluny de la font?
         {
             MoveToCenter();
-
         }
         else
         {

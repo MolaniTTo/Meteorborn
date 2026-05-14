@@ -20,6 +20,7 @@ public class BTAtacar : BTNode
 
         if (dist > minion.attackRange) //si la distanciancia al objectiu d'atac es major que el rang d'atac, es mou cap a ell
         {
+            if (minion.animator != null) minion.animator.SetBool("Attack", false);
             minion.agent.isStopped = false;
             minion.agent.SetDestination(minion.attackTarget.position);
             if (minion.animator != null) minion.animator.SetBool("IsMoving", true);
@@ -28,22 +29,35 @@ public class BTAtacar : BTNode
         {
             minion.agent.isStopped = true;
             if (minion.animator != null) minion.animator.SetBool("IsMoving", false);
+            if (minion.animator != null) minion.animator.SetBool("Attack", true);
 
-            EnemyHealth enemyHealth = minion.attackTarget.GetComponent<EnemyHealth>();
-            if (enemyHealth != null)
+            EnemicAI enemic = minion.attackTarget.GetComponent<EnemicAI>();
+            if (enemic != null) enemic.RegisterAttacker(minion.transform);
+
+            HealthComponent enemyHealth = minion.attackTarget.GetComponent<HealthComponent>();
+            if (enemyHealth != null && enemyHealth.IsTargetableByMinion)
             {
                 float drain = minion.energyDrainPerSecond * Time.deltaTime;
                 enemyHealth.TakeDamage(drain);
                 minion.energy = Mathf.Min(minion.maxEnergy, minion.energy + drain);
 
-                if (minion.animator != null) minion.animator.SetTrigger("Attack");
+                Vector3 dir = minion.attackTarget.position - minion.transform.position;
+                dir.y = 0f;
+                if (dir.sqrMagnitude > 0.01f)
+                    minion.transform.rotation = Quaternion.Slerp(
+                        minion.transform.rotation,
+                        Quaternion.LookRotation(dir),
+                        Time.deltaTime * 10f);
+
 
                 if (enemyHealth.IsDead())
                 {
                     // L'enemic ha mort → Debilitat (esgotat per la lluita)
+                    if (enemic != null) enemic.UnregisterAttacker(minion.transform);
                     minion.attackTarget = null;
                     minion.energy = 0f;
-                    minion.ChangeState(MinionAI.MinionState.Debilitat);
+                    minion.nearDeathInitialized = false;
+                    minion.ChangeState(MinionAI.MinionState.CasiMort);
                     if (minion.animator != null) minion.animator.SetTrigger("CasiMort");
                 }
             }
@@ -51,7 +65,8 @@ public class BTAtacar : BTNode
             {
                 minion.attackTarget = null;
                 minion.energy = 0f;
-                minion.ChangeState(MinionAI.MinionState.Debilitat);
+                minion.nearDeathInitialized = false;
+                minion.ChangeState(MinionAI.MinionState.CasiMort);
 
             }
         }
