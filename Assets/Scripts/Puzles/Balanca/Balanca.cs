@@ -3,15 +3,25 @@ using UnityEngine.Events;
 
 public class Balanca : MonoBehaviour
 {
+    /*
+    El Puzzle de la balança de moment a de ser obligadament de 2 pesos de 4kg 1 de 6kg i 3 de 2kg
+    */
+
     [SerializeField] PlataformaBalanca plataformaBalanca1;
     [SerializeField] PlataformaBalanca plataformaBalanca2;
 
     [SerializeField] Transform rotadorBalanca;
 
     [SerializeField] UnityEvent consequencia;
+    [SerializeField] AudioClip stoneSlideSound;
+    private AudioSource audioSource;
 
     private float rotacioObjectiu = 0f;
     private bool actualitzant = false;
+
+    private void Start() {
+        audioSource = gameObject.GetComponent<AudioSource>();
+    }
 
     void Update()
     {
@@ -25,10 +35,19 @@ public class Balanca : MonoBehaviour
                 3f * Time.deltaTime
             );
 
+            if (!audioSource.isPlaying)
+            {
+                audioSource.clip = stoneSlideSound;
+                audioSource.Play();
+            }
+
             if (Quaternion.Angle(rotadorBalanca.rotation, rotacioFinal) < 0.1f)
             {
+                audioSource.Stop();
+
                 actualitzant = false;
             }
+
         }
     }
 
@@ -40,7 +59,7 @@ public class Balanca : MonoBehaviour
 
         actualitzant = true;
 
-        if (plataformaBalanca1.pess != 0f && plataformaBalanca1.pess == plataformaBalanca2.pess)
+        if (plataformaBalanca1.pess == 10f && plataformaBalanca2.pess == 10f)
         {
             consequencia.Invoke();
         }

@@ -7,7 +7,12 @@ public class FontParticulesScript : MonoBehaviour
     private bool generar = false;
 
     private float contador = 0f;
+    private AudioSource audioSource;
+    [SerializeField] AudioClip spawnPop;
 
+    private void Start() {
+        audioSource = gameObject.GetComponent<AudioSource>();
+    }
 
     // Update is called once per frame
     void Update()
@@ -20,6 +25,8 @@ public class FontParticulesScript : MonoBehaviour
             {
                 Vector3 tempVector = new Vector3(transform.position.x + Random.Range(-1f, 1f), transform.position.y, transform.position.z + Random.Range(-1f, 1f));
                 Instantiate(particula, tempVector, Quaternion.identity);
+
+                audioSource.PlayOneShot(spawnPop);
 
                 contador = 0f;
             }

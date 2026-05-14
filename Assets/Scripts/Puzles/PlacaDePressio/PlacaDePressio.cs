@@ -10,6 +10,10 @@ public class PlacaDePressio : MonoBehaviour
     private HighlightObject highlightObject;
     private bool moving = false;
     [SerializeField] Transform placaTransform;
+    private AudioSource audioSource;
+    [SerializeField] AudioClip buttonPushSound;
+
+    private int objectsInside = 0;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -18,6 +22,8 @@ public class PlacaDePressio : MonoBehaviour
         objectivePosition = placaTransform.position;
 
         highlightObject = gameObject.GetComponentInChildren<HighlightObject>();
+
+        audioSource = gameObject.GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -37,16 +43,28 @@ public class PlacaDePressio : MonoBehaviour
     }
 
     private void OnTriggerEnter(Collider other) {
-        objectivePosition = new Vector3(initialPosition[0], initialPosition[1] - 0.25f, initialPosition[2]);
-        moving = true;
-        highlightObject.Highlight(true);
-        eventoOn.Invoke();
+        if (objectsInside == 0)
+        {
+            objectivePosition = new Vector3(initialPosition[0], initialPosition[1] - 0.25f, initialPosition[2]);
+            moving = true;
+            highlightObject.Highlight(true);
+            audioSource.PlayOneShot(buttonPushSound);
+            
+            eventoOn.Invoke();
+        }
+        objectsInside += 1;
     }
 
     private void OnTriggerExit(Collider other) {
-        objectivePosition = new Vector3(initialPosition[0], initialPosition[1], initialPosition[2]);
-        moving = true;
-        highlightObject.Highlight(false);
-        eventoOff.Invoke();
+        objectsInside -= 1;
+        if (objectsInside == 0)
+        {
+            objectivePosition = new Vector3(initialPosition[0], initialPosition[1], initialPosition[2]);
+            moving = true;
+            highlightObject.Highlight(false);
+            audioSource.PlayOneShot(buttonPushSound);
+            
+            eventoOff.Invoke();
+        }
     }
 }
