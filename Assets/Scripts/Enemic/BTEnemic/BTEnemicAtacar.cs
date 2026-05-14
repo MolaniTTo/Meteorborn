@@ -1,9 +1,10 @@
-﻿// ── 2. ATACAR ─────────────────────────────────────────────────────────────────
-// Target dins del radi d'atac. Para el ghost, es gira cap al target i ataca.
-// Si el target surt del radi d'atac però segueix visible → persegueix.
-// Si el target surt del radi de persecució → busca o patrulla.
-using UnityEngine;
+﻿using UnityEngine;
 
+// ── 3. ATACAR ─────────────────────────────────────────────────────────────────
+// Target dins del attackRadius → para ghost, gira cap al target, ataca.
+// El Scream ja ha acabat quan arribem aquí (node Scream té prioritat superior).
+// AoE: el dany real es fa a OnAttackHit() (event d'animació).
+// Si el target surt del radi → false, Perseguir agafa el control.
 [CreateAssetMenu(fileName = "BTEnemicAtacar", menuName = "BehaviourTree/Enemic/Atacar")]
 public class BTEnemicAtacar : BTNodeEnemic
 {
@@ -12,19 +13,22 @@ public class BTEnemicAtacar : BTNodeEnemic
         if (enemic.targetHealth == null || enemic.targetHealth.IsDead())
         {
             enemic.targetHealth = null;
+            enemic.SetAttackAnimation(false);
             return false;
         }
 
         float dist = Vector3.Distance(enemic.transform.position, enemic.targetHealth.transform.position);
-        if (dist > enemic.attackRadius) return false;
+        if (dist > enemic.attackRadius)
+        {
+            enemic.SetAttackAnimation(false);
+            return false;
+        }
 
-        // Para el ghost i es gira cap al target
+        enemic.GetComponent<EnemicAIDebug>()?.SetActiveNode("ATACAR");
+
         enemic.StopGhost();
         enemic.FaceTarget(enemic.targetHealth.transform.position);
         enemic.SetAttackAnimation(true);
-
-        //enemic.targetHealth.TakeDamage(enemic.damagedEnergiaPerSecond * Time.deltaTime);
-
         return true;
     }
 }

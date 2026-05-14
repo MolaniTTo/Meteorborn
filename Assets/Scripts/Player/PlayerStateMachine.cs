@@ -65,6 +65,7 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private bool traversingLink = false;
 
     // ── Light Particles ───────────────────────────────────────────────────────
+    [HideInInspector] public PlayerParticles playerParticles;
     [SerializeField] private int MaxParticles;
     [SerializeField] private int numberOfParticles;
 
@@ -82,6 +83,8 @@ public class PlayerStateMachine : MonoBehaviour
         agent.autoTraverseOffMeshLink = false;
         agent.acceleration = 99999f;
         agent.angularSpeed = 99999f;
+
+        playerParticles = GetComponent<PlayerParticles>();
     }
 
     void OnEnable()

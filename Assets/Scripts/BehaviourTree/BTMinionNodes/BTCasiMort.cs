@@ -14,23 +14,20 @@ public class BTCasiMort : BTNode
 {
     public override bool Execute(MinionAI minion)
     {
-        // Condició d'entrada: energia a 0 i NO estar ja en Debilitat
-        if (minion.energy > 0f) return false;
-        if (minion.currentState == MinionAI.MinionState.Debilitat) return false;
+        if (minion.currentState != MinionAI.MinionState.CasiMort) return false;
 
         // Primera vegada que entra en CasiMort
-        if (minion.currentState != MinionAI.MinionState.CasiMort)
+        if (!minion.nearDeathInitialized)
         {
-            minion.ChangeState(MinionAI.MinionState.CasiMort);
+            minion.nearDeathInitialized = true;
             minion.nearDeathTimer = 0f;
             minion.nearDeathExpired = false;
-
-            // Guarda l'enemic que estava atacant per vigilar-lo
             minion.watchedEnemy = minion.attackTarget;
             minion.attackTarget = null;
-
-            minion.agent.enabled = false; // queda al terra
+            minion.agent.enabled = false;
             if (minion.animator != null) minion.animator.SetTrigger("CasiMort");
+            minion.scaleController?.StartNearDeathBreath(minion.nearDeathDuration); // comença a parpadejar i respirar lentament
+            minion.visualController?.StartBlink(minion.nearDeathDuration);
         }
 
         if (minion.nearDeathExpired) return true; // ja s'ha disparat el pop, espera destrucció
@@ -38,22 +35,24 @@ public class BTCasiMort : BTNode
         // ── Cas A: l'enemic ha mort mentre el minion estava a terra ──────────
         if (minion.watchedEnemy != null)
         {
-            EnemyHealth eh = minion.watchedEnemy.GetComponent<EnemyHealth>();
+            HealthComponent eh = minion.watchedEnemy.GetComponent<HealthComponent>();
             if (eh == null || eh.IsDead())
             {
-                // L'enemic ha mort → entra en Debilitat com els normals
                 minion.watchedEnemy = null;
-                minion.energy = 0f; // segueix amb 0 energia (Debilitat no necessita energia)
+                minion.energy = 0f;
+                minion.scaleController?.StopBreath();
+                minion.visualController?.StopBlink();
+                minion.visualController?.MinLightAndEmission();
                 minion.ChangeState(MinionAI.MinionState.Debilitat);
-                if (minion.animator != null) minion.animator.SetTrigger("CasiMort");
                 return true;
             }
         }
         else
         {
-            // No hi havia enemic vigilat (va caure per altra causa) → directament Debilitat
+            minion.scaleController?.StopBreath();
+            minion.visualController?.StopBlink();
+            minion.visualController?.MinLightAndEmission();
             minion.ChangeState(MinionAI.MinionState.Debilitat);
-            if (minion.animator != null) minion.animator.SetTrigger("CasiMort");
             return true;
         }
 
@@ -62,7 +61,10 @@ public class BTCasiMort : BTNode
         if (minion.nearDeathTimer >= minion.nearDeathDuration)
         {
             minion.nearDeathExpired = true;
-            minion.PopToSpawn(); // teleport al spawn en Desactivat
+            minion.scaleController?.StopBreath();
+            minion.visualController?.StopBlink();
+            minion.visualController?.MinLightAndEmission();
+            minion.PopToSpawn();
         }
 
         return true;

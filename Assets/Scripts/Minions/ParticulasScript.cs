@@ -16,6 +16,7 @@ public class ParticulasScript : MonoBehaviour
     }
 
     void FixedUpdate() {
+
         timePased += Time.deltaTime;
 
         Vector3 direction = (playerTransform.position - transform.position).normalized;

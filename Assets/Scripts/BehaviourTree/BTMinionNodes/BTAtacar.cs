@@ -56,7 +56,8 @@ public class BTAtacar : BTNode
                     if (enemic != null) enemic.UnregisterAttacker(minion.transform);
                     minion.attackTarget = null;
                     minion.energy = 0f;
-                    minion.ChangeState(MinionAI.MinionState.Debilitat);
+                    minion.nearDeathInitialized = false;
+                    minion.ChangeState(MinionAI.MinionState.CasiMort);
                     if (minion.animator != null) minion.animator.SetTrigger("CasiMort");
                 }
             }
@@ -64,7 +65,8 @@ public class BTAtacar : BTNode
             {
                 minion.attackTarget = null;
                 minion.energy = 0f;
-                minion.ChangeState(MinionAI.MinionState.Debilitat);
+                minion.nearDeathInitialized = false;
+                minion.ChangeState(MinionAI.MinionState.CasiMort);
 
             }
         }

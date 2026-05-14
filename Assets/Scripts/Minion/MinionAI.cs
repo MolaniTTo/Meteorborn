@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Experimental.GlobalIllumination;
 
 public class MinionAI : MonoBehaviour
 {
@@ -14,6 +15,11 @@ public class MinionAI : MonoBehaviour
     [SerializeField] private Transform playerLook;
     [SerializeField] private Transform playerFollow;
     [SerializeField] private Transform playerThrow;
+    [HideInInspector] public MinionScaleController scaleController;
+    [HideInInspector] public MinionVisualController visualController;
+    [HideInInspector] public bool nearDeathInitialized = false;
+    public bool isAtMinScale => scaleController != null && scaleController.IsAtMinScale;
+
     public BTNode rootNode;
 
     // ── Spawner ───────────────────────────────────────────────────────────────
@@ -55,10 +61,16 @@ public class MinionAI : MonoBehaviour
     // ── Highlight per al cursor ───────────────────────────────────────────────
     [HideInInspector] public bool isHighlighted = false;
 
+    
+
+
+
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+        scaleController = GetComponent<MinionScaleController>();
+        visualController = GetComponent<MinionVisualController>();
     }
 
     void Start()
@@ -78,6 +90,9 @@ public class MinionAI : MonoBehaviour
         {
             playerLook = playerTransform;
         }
+        HealthComponent hc = GetComponent<HealthComponent>();
+        if (hc != null) hc.OnDeath += OnDeath;
+
     }
 
     void Update()
@@ -111,6 +126,8 @@ public class MinionAI : MonoBehaviour
         nearDeathExpired = false;
         nearDeathTimer = 0f;
         agent.enabled = true;
+        scaleController?.SetMaxScale();
+        visualController?.MaxLightAndEmission();
         ChangeState(MinionState.Activat);
     }
 
@@ -135,6 +152,8 @@ public class MinionAI : MonoBehaviour
         watchedEnemy = null;
         agent.enabled = true;
         if (animator != null) animator.SetTrigger("Reactivate");
+        scaleController?.SetMaxScale();
+        visualController?.MaxLightAndEmission();
         ChangeState(MinionState.Activat);
     }
 
@@ -152,6 +171,21 @@ public class MinionAI : MonoBehaviour
 
     public void PopToSpawn()
     {
+        // Desenregistra aquest minion de qualsevol enemic que el tingui com atacant
+        if (attackTarget != null)
+        {
+            EnemicAI enemic = attackTarget.GetComponent<EnemicAI>();
+            if (enemic != null) enemic.UnregisterAttacker(transform);
+            attackTarget = null;
+        }
+        // també comprova watchedEnemy per si estava en CasiMort
+        if (watchedEnemy != null)
+        {
+            EnemicAI enemic = watchedEnemy.GetComponent<EnemicAI>();
+            if (enemic != null) enemic.UnregisterAttacker(transform);
+            watchedEnemy = null;
+        }
+
         MinionManager.Instance?.UnregisterMinion(this);
         if (spawner != null)
             spawner.SpawnMinion();
@@ -252,6 +286,16 @@ public class MinionAI : MonoBehaviour
         agent.SetDestination(finalDestination);
         traversingLink = false;
     }
+
+    public void SetMinScale() { scaleController?.SetMinScale(); }
+
+    private void OnDeath()
+    {
+        animator.SetTrigger("CasiMort");
+        nearDeathInitialized = false; // perquè BTCasiMort s'inicialitzi bé
+        ChangeState(MinionState.CasiMort);
+    }
+
 
     void OnDrawGizmos()
     {
