@@ -24,6 +24,7 @@ public class PlacaDePressio : MonoBehaviour
         highlightObject = gameObject.GetComponentInChildren<HighlightObject>();
 
         audioSource = gameObject.GetComponent<AudioSource>();
+        
     }
 
     // Update is called once per frame
