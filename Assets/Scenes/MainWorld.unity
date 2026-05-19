@@ -513,7 +513,7 @@ GameObject:
   - component: {fileID: 495925269}
   m_Layer: 0
   m_Name: BORRAR
-  m_TagString: PlayerFollowPoint
+  m_TagString: DroneFollow
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1958,6 +1958,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7004ae10b15854449a306da3b4bc9487, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  aixecar: 0
   highlightObject: {fileID: 1904397396}
 --- !u!1001 &1427801039
 PrefabInstance:
