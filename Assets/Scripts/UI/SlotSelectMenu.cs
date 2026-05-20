@@ -1,44 +1,31 @@
+﻿// SlotSelectMenu.cs
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// Gestiona la l�gica del men� de selecci� de slots.
-/// Col�loca aquest component al GameObject del men� principal.
-/// 
-/// SETUP:
-///  1. Afegeix aquest script a un GameObject del MainMenu.
-///  2. Assigna al Inspector: els dos SlotCardUI, el panell de confirmaci�,
-///     el nom de l'escena de joc i el PlayerInput.
-///  3. Al teu Action Map "UI" assegura't que tens Navigate (Vector2),
-///     Submit i Cancel.
-/// </summary>
 public class SlotSelectMenu : MonoBehaviour
 {
+    public enum MenuState { SelectingSlot, SlotSubmenu, ConfirmNewGame, ConfirmDelete }
+
     [Header("Refs UI")]
-    [SerializeField] private SlotCardUI[] slotCards = new SlotCardUI[2]; // [0] i [1]
+    [SerializeField] private SlotCardUI[] slotCards = new SlotCardUI[2];
     [SerializeField] private ConfirmDialogUI confirmDialog;
 
     [Header("Escena")]
     [SerializeField] private string gameSceneName = "GameScene";
 
     [Header("Input")]
-    [SerializeField] private PlayerInput playerInput; // component PlayerInput a l'escena
+    [SerializeField] private PlayerInput playerInput;
 
-    // Estat intern
     private int focusedSlot = 0;
-    private bool dialogOpen = false;
-    private int pendingDeleteSlot = -1;
+    private MenuState state = MenuState.SelectingSlot;
 
     private InputAction navigateAction;
     private InputAction submitAction;
     private InputAction cancelAction;
 
-    // ?? Unity ?????????????????????????????????????????????????????????????
-
     void Awake()
     {
-        // Obtenim les accions del mapa "UI"
         var uiMap = playerInput.actions.FindActionMap("UI", throwIfNotFound: true);
         navigateAction = uiMap.FindAction("Navigate", throwIfNotFound: true);
         submitAction = uiMap.FindAction("Submit", throwIfNotFound: true);
@@ -50,7 +37,6 @@ public class SlotSelectMenu : MonoBehaviour
         navigateAction.performed += OnNavigate;
         submitAction.performed += OnSubmit;
         cancelAction.performed += OnCancel;
-
         RefreshCards();
         SetFocus(0);
     }
@@ -62,96 +48,113 @@ public class SlotSelectMenu : MonoBehaviour
         cancelAction.performed -= OnCancel;
     }
 
-    // ?? Input ?????????????????????????????????????????????????????????????
+    // ── Input ─────────────────────────────────────────────────────────────────
 
     private void OnNavigate(InputAction.CallbackContext ctx)
     {
-        if (dialogOpen) return;
+        if (state != MenuState.SelectingSlot) return;
 
-        float x = ctx.ReadValue<Vector2>().x;
-        if (x > 0.5f) SetFocus(1);
-        else if (x < -0.5f) SetFocus(0);
+        float y = ctx.ReadValue<Vector2>().y; //Vertical per suportar navegació vertical (ex: joystick)
+        if (y > 0.5f) SetFocus(0); //amunt → slot 0
+        else if (y < -0.5f) SetFocus(1); //avall → slot 1
+
     }
 
     private void OnSubmit(InputAction.CallbackContext ctx)
     {
-        if (dialogOpen)
-        {
-            // El di�leg gestiona el seu propi focus intern; aqu� nom�s tanquem si es confirma
-            return;
-        }
-        StartOrCreateSlot(focusedSlot);
+        if (state != MenuState.SelectingSlot) return;
+
+        if (SaveManager.Instance.HasSaveSlot(focusedSlot))
+            OpenSlotSubmenu(focusedSlot);
+        else
+            OpenConfirmNewGame(focusedSlot);
     }
 
     private void OnCancel(InputAction.CallbackContext ctx)
     {
-        if (dialogOpen)
-        {
-            CloseConfirmDialog();
-        }
-        // Si no hi ha di�leg, pots navegar cap enrere al men� principal aqu� si cal
+        if (state == MenuState.SelectingSlot) return;
+        CloseDialogAndReturn();
     }
 
-    // ?? API p�blica (cridada pels botons dels SlotCardUI via UnityEvents) ??
+    // ── Submenu slot ple ──────────────────────────────────────────────────────
 
-    /// <summary>Cridada quan es prem "Jugar / Nova partida" al slot.</summary>
-    public void StartOrCreateSlot(int slot)
+    private void OpenSlotSubmenu(int slot)
     {
+        state = MenuState.SlotSubmenu;
         SaveManager.Instance.SetActiveSlot(slot);
-
-        if (SaveManager.Instance.HasSaveSlot(slot))
-            LoadAndEnterGame(slot);
-        else
-            NewGameAndEnter(slot);
-    }
-
-    /// <summary>Obre el di�leg de confirmaci� per eliminar el slot indicat.</summary>
-    public void RequestDeleteSlot(int slot)
-    {
-        pendingDeleteSlot = slot;
-        dialogOpen = true;
         confirmDialog.Show(
-            $"Eliminar la partida del slot {slot + 1}?",
-            onConfirm: ConfirmDelete,
-            onCancel: CloseConfirmDialog
+            $"Partida {slot + 1}",
+            confirmText: "Jugar",
+            cancelText: "Eliminar",
+            onConfirm: () => LoadAndEnterGame(slot),
+            onCancel: () => RequestDeleteSlot(slot), // ← botó Eliminar
+            onBack: CloseDialogAndReturn            // ← botó B/Cercle sempre torna enrere
         );
     }
 
-    // ?? Privats ???????????????????????????????????????????????????????????
+    // ── Confirmar nova partida ────────────────────────────────────────────────
+
+    private void OpenConfirmNewGame(int slot)
+    {
+        state = MenuState.ConfirmNewGame;
+        confirmDialog.Show(
+            "Vols començar una nova aventura?",
+            confirmText: "Sí",
+            cancelText: "No",
+            onConfirm: () => NewGameAndEnter(slot),
+            onCancel: CloseDialogAndReturn
+        );
+    }
+
+    // ── Confirmar eliminar ────────────────────────────────────────────────────
+
+    public void RequestDeleteSlot(int slot)
+    {
+        state = MenuState.ConfirmDelete;
+        confirmDialog.Show(
+            $"Eliminar la partida {slot + 1}?",
+            confirmText: "Sí, eliminar",
+            cancelText: "No, tornar",
+            onConfirm: () => ConfirmDelete(slot),
+            onCancel: CloseDialogAndReturn
+        );
+    }
+
+    private void ConfirmDelete(int slot)
+    {
+        SaveManager.Instance.DeleteSlot(slot);
+        CloseDialogAndReturn();
+        RefreshCards();
+    }
+
+    // ── Navegació i escena ────────────────────────────────────────────────────
 
     private void LoadAndEnterGame(int slot)
     {
-        // El SaveManager ja t� el slot actiu; carregarem les dades un cop l'escena estigui carregada.
+        confirmDialog.Hide();
         SceneManager.sceneLoaded += OnGameSceneLoaded;
         SceneManager.LoadScene(gameSceneName);
     }
 
     private void NewGameAndEnter(int slot)
     {
-        SaveManager.Instance.DeleteSlot(slot); // neteja per si hi ha restes
-        // No cridem Load; l'escena comen�a des de zero
+        SaveManager.Instance.SetActiveSlot(slot);
+        SaveManager.Instance.DeleteSlot(slot);
+        confirmDialog.Hide();
         SceneManager.LoadScene(gameSceneName);
     }
 
     private void OnGameSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         SceneManager.sceneLoaded -= OnGameSceneLoaded;
-        SaveManager.Instance.Load(); // aplica les dades del slot actiu al m�n ja carregat
+        SaveManager.Instance.Load();
     }
 
-    private void ConfirmDelete()
+    private void CloseDialogAndReturn()
     {
-        SaveManager.Instance.DeleteSlot(pendingDeleteSlot);
-        pendingDeleteSlot = -1;
-        CloseConfirmDialog();
-        RefreshCards();
-    }
-
-    private void CloseConfirmDialog()
-    {
-        dialogOpen = false;
+        state = MenuState.SelectingSlot;
         confirmDialog.Hide();
-        SetFocus(focusedSlot); // restaura el focus
+        SetFocus(focusedSlot);
     }
 
     private void SetFocus(int slot)
@@ -166,7 +169,7 @@ public class SlotSelectMenu : MonoBehaviour
         for (int i = 0; i < slotCards.Length; i++)
         {
             SlotPreviewData preview = SaveManager.Instance?.GetSlotPreview(i);
-            slotCards[i].Refresh(i, preview); // preview == null ? slot buit
+            slotCards[i].Refresh(i, preview);
         }
     }
 }
