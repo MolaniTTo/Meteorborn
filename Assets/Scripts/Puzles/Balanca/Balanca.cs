@@ -29,8 +29,8 @@ public class Balanca : MonoBehaviour
         {
             Quaternion rotacioFinal = Quaternion.Euler(0f, 0f, rotacioObjectiu);
 
-            rotadorBalanca.rotation = Quaternion.RotateTowards(
-                rotadorBalanca.rotation,
+            rotadorBalanca.localRotation = Quaternion.RotateTowards(
+                rotadorBalanca.localRotation,
                 rotacioFinal,
                 3f * Time.deltaTime
             );
