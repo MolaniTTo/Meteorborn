@@ -1,67 +1,217 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
 public class Balanca : MonoBehaviour
 {
-    /*
-    El Puzzle de la balança de moment a de ser obligadament de 2 pesos de 4kg 1 de 6kg i 3 de 2kg
-    */
+    [Header("TPs")]
+    [SerializeField] private Transform tp1;
+    [SerializeField] private Transform tp2;
 
-    [SerializeField] PlataformaBalanca plataformaBalanca1;
-    [SerializeField] PlataformaBalanca plataformaBalanca2;
+    [Header("TP Visual Indicators (MeshRenderer)")]
+    [SerializeField] private ParticleSystem tp1Indicator;
+    [SerializeField] private ParticleSystem tp2Indicator;
 
-    [SerializeField] Transform rotadorBalanca;
+    [Header("Pesos")]
+    [SerializeField] private GameObject[] totsPesos;
 
-    [SerializeField] UnityEvent consequencia;
-    [SerializeField] AudioClip stoneSlideSound;
+    [Header("Plataformas")]
+    [SerializeField] private PlataformaBalanca plataformaBalanca1;
+    [SerializeField] private PlataformaBalanca plataformaBalanca2;
+
+    [Header("Rotació")]
+    [SerializeField] private Transform rotadorBalanca;
+
+    [Header("Events")]
+    [SerializeField] private UnityEvent consequencia;
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip stoneSlideSound;
+
+    public bool activada = false;
+
     private AudioSource audioSource;
 
+    
+    // BALANÇA
+    
     private float rotacioObjectiu = 0f;
     private bool actualitzant = false;
 
-    private void Start() {
-        audioSource = gameObject.GetComponent<AudioSource>();
+    
+    // SELECCIÓN
+    
+    private int pesSeleccionat = 0;
+    private int tpSeleccionat = -1; // ❗ empieza sin TP
+
+    private Highlightable[] highlights;
+
+    private void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+
+        highlights = new Highlightable[totsPesos.Length];
+
+        for (int i = 0; i < totsPesos.Length; i++)
+        {
+            highlights[i] = totsPesos[i].GetComponent<Highlightable>();
+        }
+
+        ActualitzarHighlights();
+        ActualitzarTPIndicators();
     }
 
-    void Update()
+    private void Update()
     {
-        if (actualitzant)
+        if (activada) 
         {
-            Quaternion rotacioFinal = Quaternion.Euler(0f, 0f, rotacioObjectiu);
+            GestionarInputs();
+        }
+        ActualitzarRotacio();
+    }
 
-            rotadorBalanca.localRotation = Quaternion.RotateTowards(
-                rotadorBalanca.localRotation,
-                rotacioFinal,
-                3f * Time.deltaTime
-            );
+    
+    // INPUTS
+    
+    private void GestionarInputs()
+    {
+        // PESO
 
-            if (!audioSource.isPlaying)
-            {
-                audioSource.clip = stoneSlideSound;
-                audioSource.Play();
-            }
+        if (Keyboard.current.upArrowKey.wasPressedThisFrame)
+        {
+            pesSeleccionat--;
 
-            if (Quaternion.Angle(rotadorBalanca.rotation, rotacioFinal) < 0.1f)
-            {
-                audioSource.Stop();
+            if (pesSeleccionat < 0)
+                pesSeleccionat = totsPesos.Length - 1;
 
-                actualitzant = false;
-            }
+            ActualitzarHighlights();
+        }
 
+        if (Keyboard.current.downArrowKey.wasPressedThisFrame)
+        {
+            pesSeleccionat++;
+
+            if (pesSeleccionat >= totsPesos.Length)
+                pesSeleccionat = 0;
+
+            ActualitzarHighlights();
+        }
+
+        // ==========
+        // TP SELECCIÓN
+        // ==========
+
+        if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
+        {
+            tpSeleccionat = 0;
+            ActualitzarTPIndicators();
+        }
+
+        if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
+        {
+            tpSeleccionat = 1;
+            ActualitzarTPIndicators();
+        }
+
+        // ==========
+        // COLOCAR
+        // ==========
+
+        if ((Keyboard.current.eKey.wasPressedThisFrame ||
+             Keyboard.current.enterKey.wasPressedThisFrame)
+             && tpSeleccionat != -1)
+        {
+            ColocarPes();
         }
     }
 
+    
+    // TP INDICATORS
+    
+    private void ActualitzarTPIndicators()
+    {
+        if (tpSeleccionat == 0)
+        {
+            tp1Indicator.Play();
+            tp2Indicator.Stop();
+        }
+        else if (tpSeleccionat == 1)
+        {
+            tp1Indicator.Stop();
+            tp2Indicator.Play();
+        }
+    }
+
+    
+    // COLOCAR
+    
+    private void ColocarPes()
+    {
+        Transform tpActual = tpSeleccionat == 0 ? tp1 : tp2;
+        GameObject pes = totsPesos[pesSeleccionat];
+
+        pes.transform.position = tpActual.position;
+
+        Actualitzar();
+    }
+
+    
+    // HIGHLIGHT PESOS
+    
+    private void ActualitzarHighlights()
+    {
+        for (int i = 0; i < highlights.Length; i++)
+        {
+            highlights[i].UnHighlight();
+        }
+
+        highlights[pesSeleccionat].Highlight();
+    }
+
+    
+    // BALANZA
+    
+    private void ActualitzarRotacio()
+    {
+        if (!actualitzant) return;
+
+        Quaternion rotacioFinal = Quaternion.Euler(0f, 0f, rotacioObjectiu);
+
+        rotadorBalanca.localRotation = Quaternion.RotateTowards(
+            rotadorBalanca.localRotation,
+            rotacioFinal,
+            3f * Time.deltaTime
+        );
+
+        if (!audioSource.isPlaying)
+        {
+            audioSource.clip = stoneSlideSound;
+            audioSource.Play();
+        }
+
+        if (Quaternion.Angle(rotadorBalanca.rotation, rotacioFinal) < 0.1f)
+        {
+            audioSource.Stop();
+            actualitzant = false;
+        }
+    }
+
+    
+    // LÓGICA BALANZA
+    
     public void Actualitzar()
     {
         float pesResult = plataformaBalanca1.pess - plataformaBalanca2.pess;
 
         rotacioObjectiu = pesResult * 3f;
-
         actualitzant = true;
 
-        if (plataformaBalanca1.pess == 10f && plataformaBalanca2.pess == 10f)
+        if (plataformaBalanca1.pess == 10f &&
+            plataformaBalanca2.pess == 10f)
         {
+            audioSource.Stop();
             consequencia.Invoke();
+            Destroy(this);
         }
     }
 }
