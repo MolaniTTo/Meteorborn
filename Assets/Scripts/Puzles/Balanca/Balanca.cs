@@ -28,9 +28,11 @@ public class Balanca : MonoBehaviour
     [Header("Audio")]
     [SerializeField] private AudioClip stoneSlideSound;
 
-    public bool activada = false;
+    [Header("Camara")]
+    [SerializeField] private Transform posicioCamara;
+    private Transform camaraPlayer;
 
-    private AudioSource audioSource;
+    public bool activada = false;
 
     
     // BALANÇA
@@ -48,8 +50,6 @@ public class Balanca : MonoBehaviour
 
     private void Start()
     {
-        audioSource = GetComponent<AudioSource>();
-
         highlights = new Highlightable[totsPesos.Length];
 
         for (int i = 0; i < totsPesos.Length; i++)
@@ -59,6 +59,8 @@ public class Balanca : MonoBehaviour
 
         ActualitzarHighlights();
         ActualitzarTPIndicators();
+
+        camaraPlayer = GameObject.FindWithTag("MainCamera").GetComponent<Transform>();
     }
 
     private void Update()
@@ -68,6 +70,16 @@ public class Balanca : MonoBehaviour
             GestionarInputs();
         }
         ActualitzarRotacio();
+    }
+
+    //Posicionar la camara segons si el puzzle esta activat o no
+
+    private void LateUpdate() {
+        if (activada)
+        {
+            camaraPlayer.position = posicioCamara.position;
+            camaraPlayer.rotation = posicioCamara.rotation;
+        }
     }
 
     
@@ -97,10 +109,8 @@ public class Balanca : MonoBehaviour
             ActualitzarHighlights();
         }
 
-        // ==========
+        
         // TP SELECCIÓN
-        // ==========
-
         if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
         {
             tpSeleccionat = 0;
@@ -113,9 +123,7 @@ public class Balanca : MonoBehaviour
             ActualitzarTPIndicators();
         }
 
-        // ==========
         // COLOCAR
-        // ==========
 
         if ((Keyboard.current.eKey.wasPressedThisFrame ||
              Keyboard.current.enterKey.wasPressedThisFrame)
@@ -169,7 +177,7 @@ public class Balanca : MonoBehaviour
     }
 
     
-    // BALANZA
+    // BALANÇA
     
     private void ActualitzarRotacio()
     {
@@ -183,21 +191,14 @@ public class Balanca : MonoBehaviour
             3f * Time.deltaTime
         );
 
-        if (!audioSource.isPlaying)
-        {
-            audioSource.clip = stoneSlideSound;
-            audioSource.Play();
-        }
+        
 
         if (Quaternion.Angle(rotadorBalanca.rotation, rotacioFinal) < 0.1f)
         {
-            audioSource.Stop();
             actualitzant = false;
         }
     }
 
-    
-    // LÓGICA BALANZA
     
     public void Actualitzar()
     {
@@ -209,9 +210,14 @@ public class Balanca : MonoBehaviour
         if (plataformaBalanca1.pess == 10f &&
             plataformaBalanca2.pess == 10f)
         {
-            audioSource.Stop();
             consequencia.Invoke();
             Destroy(this);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other) {
+        if (other.CompareTag("Player")) {
+            activada = true;
         }
     }
 }
