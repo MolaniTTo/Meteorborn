@@ -29,9 +29,6 @@ public class SlotCardUI : MonoBehaviour
     [SerializeField] private TMP_Text txtParticles;
     [SerializeField] private TMP_Text txtTutorial;
 
-    [Header("Botó eliminar")]
-    [SerializeField] private Button btnDelete;
-
     [Header("Focus visual")]
     [SerializeField] private GameObject focusBorder;
 
@@ -42,8 +39,6 @@ public class SlotCardUI : MonoBehaviour
     void Awake()
     {
         menu = FindFirstObjectByType<SlotSelectMenu>();
-        // Botó eliminar: connectat aquí per no necessitar UnityEvent manual
-        btnDelete?.onClick.AddListener(() => menu.RequestDeleteSlot(slotIndex));
     }
 
     /// <summary>Actualitza la targeta amb les dades de preview (null = buit).</summary>
@@ -63,8 +58,6 @@ public class SlotCardUI : MonoBehaviour
             txtTutorial.text = preview.tutorialDone ? "Tutorial ✓" : "Tutorial pendent";
         }
 
-        // El botó eliminar només té sentit si hi ha dades
-        if (btnDelete != null) btnDelete.gameObject.SetActive(hasSave);
     }
 
     /// <summary>Activa o desactiva el ressaltat de focus (navegació per mando).</summary>

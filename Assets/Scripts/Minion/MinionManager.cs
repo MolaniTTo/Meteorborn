@@ -76,6 +76,11 @@ public class MinionManager : MonoBehaviour
         }
 
         UpdatePendingHighlight(cursor.WorldPosition);
+
+        if (cursor.CylinderIsActive && pendingMinion != null)
+        {
+            TryActivatePending();
+        }
     }
 
     // ────────────────────────────────────────────────────────────────────────
@@ -102,6 +107,10 @@ public class MinionManager : MonoBehaviour
 
     private void UpdatePendingHighlight(Vector3 cursorPos)
     {
+        // Radi efectiu: si el cilindre està actiu, usem el seu radi
+        float effectiveActivationRadius = (cursor.CylinderIsActive) ? cursor.CylinderRadius : activationRadius;
+        float effectiveReactivationRadius = (cursor.CylinderIsActive) ? cursor.CylinderRadius : reactivationRadius;
+
         MinionAI closest = null;
         float closestDist = float.MaxValue;
         bool isReactivation = false;
@@ -110,17 +119,16 @@ public class MinionManager : MonoBehaviour
         {
             float dist = Vector3.Distance(minion.transform.position, cursorPos);
 
-            if (minion.currentState == MinionAI.MinionState.Desactivat && dist <= activationRadius)
+            if (minion.currentState == MinionAI.MinionState.Desactivat && dist <= effectiveActivationRadius)
             {
                 if (dist < closestDist) { closestDist = dist; closest = minion; isReactivation = false; }
             }
-            else if (minion.currentState == MinionAI.MinionState.Debilitat && dist <= reactivationRadius)
+            else if (minion.currentState == MinionAI.MinionState.Debilitat && dist <= effectiveReactivationRadius)
             {
                 if (dist < closestDist) { closestDist = dist; closest = minion; isReactivation = true; }
             }
         }
 
-        // Neteja el highlight anterior si ha canviat
         if (pendingMinion != closest)
         {
             if (pendingMinion != null) pendingMinion.isHighlighted = false;
@@ -265,5 +273,32 @@ public class MinionManager : MonoBehaviour
             activeMinions.RemoveAt(i);
             assigned++;
         }
+    }
+
+    public void TryActivatePending()
+    {
+        if (pendingMinion == null) return;
+
+        int cost = pendingIsReactivation ? weaknessCost : activationCost;
+        if (!PlayerParticles.Instance.HasEnough(cost))
+        {
+            Debug.Log($"[Minions] No hi ha prou partícules! Calen {cost}");
+            return;
+        }
+
+        PlayerParticles.Instance.Spend(cost);
+
+        if (pendingIsReactivation)
+        {
+            pendingMinion.ReactivateFromWeakness();
+            RegisterActive(pendingMinion);
+        }
+        else
+        {
+            pendingMinion.Activate();
+            RegisterActive(pendingMinion);
+        }
+
+        ClearPending();
     }
 }

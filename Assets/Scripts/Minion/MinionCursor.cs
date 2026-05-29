@@ -1,4 +1,5 @@
-﻿using Unity.Cinemachine;
+﻿using DG.Tweening;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
@@ -16,6 +17,7 @@ public class MinionCursor : MonoBehaviour
 
     [Header("Visual")]
     [SerializeField] private GameObject cursorVisual;
+    [SerializeField] private GameObject targetVisual;
     [SerializeField] private LineRenderer lineRenderer;
     [SerializeField] private int linePoints = 8;
 
@@ -25,11 +27,25 @@ public class MinionCursor : MonoBehaviour
     [Header("Referència a la Cam i al Player")]
     [SerializeField] private PlayerStateMachine playerStateMachine;
 
+    [Header("Visual")]
+    public Transform visualCylinder;
+    public Transform target = default;
+    [SerializeField] private Vector3 targetOffset = Vector3.zero;
+
     // ── Estat intern ──────────────────────────────────────────────────────────
     private bool isCursorActive = false;
+    private bool isCylinderActive = false;
     private bool isOnLockMode = false; //per saber quan esta amb un enemic lockejat
     private Vector3 cursorWorldPosition;
     private Vector3 cursorVelocity;
+
+    // ── RT Hold ───────────────────────────────────────────────────────────────
+    private bool isRTHeld = false; // Per saber si RT està sent mantingut per activar el mode de recollir/activar minions
+    private float rtHoldTimer = 0f; // Temporitzador per controlar el temps que RT ha estat mantingut
+    [SerializeField] private float rtHoldThreshold = 0.5f; // Temps que RT ha de ser mantingut per activar el mode de recollir/activar minions
+    [SerializeField] private float cylinderRadius = 5f;
+    public bool CylinderIsActive => isCylinderActive;
+    public float CylinderRadius => cylinderRadius;
 
     // ── Input ─────────────────────────────────────────────────────────────────
     private InputSystem_Actions inputActions;
@@ -37,23 +53,30 @@ public class MinionCursor : MonoBehaviour
     private InputAction leftTrigger;    // LT → activa mode cursor
     private InputAction rightTrigger;   // RT → confirma acció (activar / llançar)
 
+    public Vector3 PlayerThrowPosition => playerThrow.position;
+
     void Awake()
     {
         inputActions = new InputSystem_Actions();
         lookAction = inputActions.Player.Look;
         leftTrigger = inputActions.Player.CursorMode;     // nova acció al teu Input Asset
         rightTrigger = inputActions.Player.LaunchMinion;   // nova acció al teu Input Asset
+        if (cursorVisual != null) cursorVisual.SetActive(false);
+        if (lineRenderer != null) lineRenderer.enabled = false;
+        if (targetVisual != null) targetVisual.SetActive(false);
     }
 
     void OnEnable()
     {
         inputActions.Player.Enable();
-        rightTrigger.performed += OnRightTriggerPerformed;
+        rightTrigger.started += OnRightTriggerStarted;  
+        rightTrigger.canceled += OnRightTriggerReleased; 
     }
 
     void OnDisable()
     {
-        rightTrigger.performed -= OnRightTriggerPerformed;
+        rightTrigger.started -= OnRightTriggerStarted;
+        rightTrigger.canceled -= OnRightTriggerReleased;
         inputActions.Player.Disable();
     }
 
@@ -83,6 +106,16 @@ public class MinionCursor : MonoBehaviour
         {
             UpdateCursorPosition();
             UpdateLineRenderer();
+            visualCylinder.transform.position = target.position;
+
+            if (isRTHeld)
+            {
+                rtHoldTimer += Time.deltaTime;
+                if(rtHoldTimer >= rtHoldThreshold && !isCylinderActive) //si el RT ha estat mantingut prou temps i el cilindre no està actiu, l'activem
+                {
+                    ActivateCylinder();
+                }
+            }
         }
 
     }
@@ -102,6 +135,7 @@ public class MinionCursor : MonoBehaviour
 
         if (cinemachineInput != null) cinemachineInput.enabled = false;
         if (cursorVisual != null) cursorVisual.SetActive(true);
+        if (targetVisual != null) targetVisual.SetActive(true);
         if (lineRenderer != null) { lineRenderer.enabled = true; lineRenderer.positionCount = linePoints; }
     }
 
@@ -110,7 +144,34 @@ public class MinionCursor : MonoBehaviour
         isCursorActive = false;
         if (cinemachineInput != null) cinemachineInput.enabled = true;
         if (cursorVisual != null) cursorVisual.SetActive(false);
+        if (targetVisual != null) targetVisual.SetActive(false);
         if (lineRenderer != null) lineRenderer.enabled = false;
+
+        if (isCylinderActive) DeactivateCylinder();
+    }
+
+    private void ActivateCylinder()
+    {
+        isCylinderActive = true;
+        Debug.Log("[Cursor] ActivateCylinder");
+        if (visualCylinder == null) return;
+
+        visualCylinder.DOKill();
+        visualCylinder.localScale = Vector3.zero;
+        visualCylinder.DOScaleX(5f, 0.3f);
+        visualCylinder.DOScaleZ(5f, 0.3f);
+        visualCylinder.DOScaleY(2f, 0.2f).SetDelay(0.2f);
+    }
+
+    private void DeactivateCylinder()
+    {
+        isCylinderActive = false;
+        if (visualCylinder == null) return;
+
+        visualCylinder.DOKill();
+        visualCylinder.DOScaleX(0f, 0.2f);
+        visualCylinder.DOScaleZ(0f, 0.2f);
+        visualCylinder.DOScaleY(0f, 0.1f);
     }
 
     // ── Moviment cursor ───────────────────────────────────────────────────────
@@ -131,6 +192,8 @@ public class MinionCursor : MonoBehaviour
             cursorWorldPosition = navHit.position;
 
         transform.position = Vector3.SmoothDamp(transform.position, cursorWorldPosition, ref cursorVelocity, cursorSmoothTime);
+        target.position = cursorWorldPosition + targetOffset;
+        target.up = Vector3.Lerp(target.up, Vector3.up, Time.deltaTime * 10f); 
     }
 
     // ── Línia jugador → cursor ─────────────────────────────────────────────────
@@ -147,21 +210,40 @@ public class MinionCursor : MonoBehaviour
         }
     }
 
-    // ── RT: acció unificada ───────────────────────────────────────────────────
-    // MinionManager decideix si activar/reactivar un minion o llançar-ne un
-
-    private void OnRightTriggerPerformed(InputAction.CallbackContext ctx)
+    // ── RT: press ─────────────────────────────────────────────────────────────
+    private void OnRightTriggerStarted(InputAction.CallbackContext ctx)
     {
-        bool hasLockOn = LockOnSystem.Instance != null && LockOnSystem.Instance.IsLockedOn;
-        if (hasLockOn)
+        if(!isCursorActive) return; // només ens interessa si el cursor està actiu
+        isRTHeld = true;
+        rtHoldTimer = 0f; // Reiniciem el temporitzador quan RT comença a ser mantingut
+    }
+
+    //── RT: release ─────────────────────────────────────────────────────────────
+    private void OnRightTriggerReleased(InputAction.CallbackContext ctx)
+    {
+        if (!isCursorActive) { isRTHeld = false; return; }
+
+        bool wasHold = rtHoldTimer >= rtHoldThreshold;
+        isRTHeld = false;
+        rtHoldTimer = 0f;
+
+        // Sempre desactivem el cilindre al soltar, independentment de wasHold
+        if (isCylinderActive) DeactivateCylinder();
+
+        // Només llancem si va ser un click ràpid (no hold)
+        // i el cilindre NO estava actiu quan es va prémer
+        if (!wasHold && !isCylinderActive)
         {
-            // Envia la posició de l'enemic directament
-            Vector3 enemyPos = LockOnSystem.Instance.Target.position;
-            MinionManager.Instance?.ConfirmCursorAction(enemyPos, playerThrow.position);
-        }
-        else if (isCursorActive)
-        {
-            MinionManager.Instance?.ConfirmCursorAction(cursorWorldPosition, playerThrow.position);
+            bool hasLockOn = LockOnSystem.Instance != null && LockOnSystem.Instance.IsLockedOn;
+            if (hasLockOn)
+            {
+                Vector3 enemyPos = LockOnSystem.Instance.Target.position;
+                MinionManager.Instance?.LaunchMinionToCursor(enemyPos, playerThrow.position);
+            }
+            else
+            {
+                MinionManager.Instance?.LaunchMinionToCursor(cursorWorldPosition, playerThrow.position);
+            }
         }
     }
 
