@@ -7,9 +7,14 @@ public class HighlightObject : MonoBehaviour
     public Color highlightEmission = Color.white;
     public float intensity = 2f;
 
-    void Start()
+    void Awake()
     {
         mat = GetComponent<Renderer>().material;
+
+        if (mat == null)
+        {
+            Debug.Log("Hola error");
+        }
 
         // Asegurarse de que la emisión esté activada
         mat.EnableKeyword("_EMISSION");

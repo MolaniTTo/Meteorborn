@@ -9,17 +9,29 @@ public class PlataformaBalanca : MonoBehaviour
     public Vector3 objectivePosition;
     public Vector3 initialPosition;
 
+    private AudioSource audioSource;
+
     private float miniCounter;
 
     private void Start() {
         objectivePosition = plataformaTransform.position;
         initialPosition = objectivePosition;
+
+        audioSource = gameObject.GetComponent<AudioSource>();
     }
 
     private void FixedUpdate() {
         if (objectivePosition != plataformaTransform.position)
         {
             plataformaTransform.position = Vector3.MoveTowards(plataformaTransform.position, objectivePosition, 0.01f);
+
+            if (!audioSource.isPlaying) {
+                audioSource.Play();
+            }
+        } 
+        else
+        {
+            audioSource.Stop();
         }
 
         if (miniCounter >= 2f)
