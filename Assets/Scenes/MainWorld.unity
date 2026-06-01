@@ -878,6 +878,10 @@ PrefabInstance:
       propertyPath: fantasmaAgent
       value: 
       objectReference: {fileID: 1208506250}
+    - target: {fileID: 2557618962691185377, guid: 65ed0af2b67da8a46acd3d6287c4b76f, type: 3}
+      propertyPath: particulesAtac
+      value: 
+      objectReference: {fileID: 2159171485000042602, guid: 02ea2f8cb1769f14bbf9bff083c9b50d, type: 3}
     - target: {fileID: 7126469200300863275, guid: 65ed0af2b67da8a46acd3d6287c4b76f, type: 3}
       propertyPath: m_Name
       value: Enemic
