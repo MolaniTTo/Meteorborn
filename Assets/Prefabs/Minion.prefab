@@ -1001,13 +1001,13 @@ MonoBehaviour:
   rootNode: {fileID: 11400000, guid: 393bf0fcd8766504b8c24223428a971b, type: 2}
   spawner: {fileID: 0}
   spawnPosition: {x: 0, y: 0, z: 0}
-  maxEnergy: 100
-  energy: 100
+  maxEnergy: 30
+  energy: 30
   playerTransform: {fileID: 0}
   followUpdateInterval: 0.2
   attackTarget: {fileID: 0}
   attackRange: 3
-  energyDrainPerSecond: 10
+  energyDrainPerSecond: 4
   nearDeathDuration: 15
   nearDeathTimer: 0
   nearDeathExpired: 0
@@ -1094,6 +1094,7 @@ MonoBehaviour:
   maxIntensity: 2
   minIntensity: 0
   transitionDuration: 0.5
+  originalMat: {fileID: 0}
 --- !u!1 &7380987655502434541
 GameObject:
   m_ObjectHideFlags: 0
