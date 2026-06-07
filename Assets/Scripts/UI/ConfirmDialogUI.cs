@@ -60,6 +60,8 @@ public class ConfirmDialogUI : MonoBehaviour
         cancelAction.performed -= OnCancel;
         gameObject.SetActive(false);
     }
+
+
     private void OnNavigate(InputAction.CallbackContext ctx)
     {
         float x = ctx.ReadValue<Vector2>().x;

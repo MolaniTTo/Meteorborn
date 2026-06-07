@@ -2,12 +2,13 @@
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 using static UnityEngine.InputSystem.InputAction;
 
 public class PlayerStateMachine : MonoBehaviour
 {
     // ── Enums ─────────────────────────────────────────────────────────────────
-    public enum PlayerViewMode { ThirdPerson, OrthographicView }
+    public enum PlayerViewMode { ThirdPerson, OrthographicView, DroneView }
     public enum PlayerState { Idle, Walking, OrthoIdle, OrthoMoving, LockOnIdle, LockOnMoving }
     public PlayerViewMode CurrentViewMode => playerViewMode;
 
@@ -183,6 +184,13 @@ public class PlayerStateMachine : MonoBehaviour
                 orthoCursor.SetActive(true);
             }
         }
+        else if (mode == PlayerViewMode.DroneView)
+        {
+            currentState = PlayerState.Idle;
+            agent.ResetPath();
+            agent.velocity = Vector3.zero;
+            if (orthoCursor != null) orthoCursor.SetActive(false);
+        }
         else
         {
             currentState = PlayerState.Idle;
@@ -206,7 +214,8 @@ public class PlayerStateMachine : MonoBehaviour
             case PlayerState.LockOnMoving: HandleLockOnMoving(); break;
         }
 
-        if (agent.isOnOffMeshLink && !agent.pathPending && !traversingLink)
+        if (agent.isOnOffMeshLink && !agent.pathPending && !traversingLink
+            && playerViewMode != PlayerViewMode.DroneView)
             StartCoroutine(TraverseLink());
 
         UpdateAnimator();
@@ -222,6 +231,8 @@ public class PlayerStateMachine : MonoBehaviour
     private void ProcessInputActions()
     {
         moveInput = moveAction.ReadValue<Vector2>();
+
+        if (playerViewMode == PlayerViewMode.DroneView) return;
 
         if (playerViewMode == PlayerViewMode.ThirdPerson)
         {

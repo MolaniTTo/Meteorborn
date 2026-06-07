@@ -24,7 +24,12 @@ public class dapMovementScript : MonoBehaviour
         helice2.Rotate(0f, -1f * speedMultiplier, 0f);
     }
 
+    public bool isControlledByPlayer = false;
+
     void Update() {
+
+        if (isControlledByPlayer) return;
+
         float resultSpeed = followSpeed * (Vector3.Distance(playerTrans.position, transform.position) * 0.70f);
 
         transform.position = Vector3.MoveTowards(transform.position, playerTrans.position, resultSpeed * Time.deltaTime);

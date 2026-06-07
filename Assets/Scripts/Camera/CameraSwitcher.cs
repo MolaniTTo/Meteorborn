@@ -1,6 +1,9 @@
 ﻿using System.Collections;
+using Unity.AI.Navigation;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 public class CameraSwitcher : MonoBehaviour
 {
@@ -27,6 +30,33 @@ public class CameraSwitcher : MonoBehaviour
     [SerializeField] private float blendDuration = 1.5f;    //Duració del blend entre càmeres, per suavitzar el canvi i evitar canvis bruscos que puguin molestar al jugador
     [SerializeField] private float perspectiveFOV = 60f;    //FOV default de la camara en perspectiva, per tornar a aquest valor quan es torna a la camara en perspectiva després d'haver passat por una zona de camara ortografica
     [SerializeField] private float orthoMoveSpeed = 2f;     //Velocitat del desplaçament entre posicions ortho
+    
+    //Drone
+    [Header("Drone")]
+    [SerializeField] private CinemachineCamera droneCam;
+    [SerializeField] private dapMovementScript droneMovement;
+    [SerializeField] private GameObject droneCameraPosition;
+    [SerializeField] private float droneMoveSpeed = 10f;
+    [SerializeField] private float droneRotateSpeed = 80f;
+    [SerializeField] private float droneMinHeight = 1f;
+    [SerializeField] private float droneMaxHeight = 50f;
+    private float dronePitch = 0f;
+    [Header("Drone FX")]
+    [SerializeField] private Volume droneVolume;
+    [Header("Drone Snap & Preview")]
+    [SerializeField] private DroneSnapDetector snapDetector;
+    [SerializeField] private float previewOrthoSize = 10f;      // ortho size de la preview
+    [SerializeField] private float orthoFlattenZOffset = 50f; // ajusta segons el teu món
+    private bool _droneBlendStarted = false;
+    private Vector3 _dronePositionBeforeFlatten;
+    [SerializeField] private float orthoSizeDistanceMultiplier = 0.15f; 
+    [SerializeField] private float orthoSizeMin = 5f;
+    [SerializeField] private float orthoSizeMax = 30f;
+    [SerializeField] private float droneFlattenZOffset = 55f;
+    [SerializeField] private GameObject droneGameObject;
+
+    [Header("HUD")]
+    [SerializeField] private DroneHUD droneHUD;
 
     //Input
     private InputSystem_Actions inputActions;
@@ -38,13 +68,17 @@ public class CameraSwitcher : MonoBehaviour
         ExpandingFOV, 
         BlendingPosition, 
         MovingOrthoCamera,
-        ShrinkingFOV 
+        ShrinkingFOV,
+        EnteringDrone,
+        DroneActive,
+        ExitingDrone,
+        ReturningToDrone
     }
 
-
     private TransitionState transitionState = TransitionState.Idle;
-    private bool isOrthoMode = false;           //Default esta en perspectiva tercera persona
-    public bool IsOrthoMode => isOrthoMode;
+    [SerializeField] private bool isOrthoMode = false;           //Default esta en perspectiva tercera persona
+    public static bool IsOrthoMode { get; private set; } //propiuetat estatica per que els altres scripts puguin saber si estem en ortho o no.
+
 
     //Zona de la camara
     private CameraZone currentZone;     //Zona activa actual (null si no hi ha cap)
@@ -57,6 +91,7 @@ public class CameraSwitcher : MonoBehaviour
                                            && currentZone.OrthoPositions != null
                                            && currentZone.OrthoPositions.Length > 1;
 
+
     private void Awake()
     {
         inputActions = new InputSystem_Actions();
@@ -65,19 +100,23 @@ public class CameraSwitcher : MonoBehaviour
     private void OnEnable()
     {
         inputActions.Player.Enable();
-        inputActions.Player.SwitchCamera.performed += OnSwitchCameraPerformed;                  //Quan es prem el boto de canvi de camara esta subcrit al metode OnSwitchCamera
-        inputActions.Player.CycleCameraPosition.performed += OnCycleCameraPositionPerformed;    //Quan es prem el boto de ciclar posicio de camara esta subcrit al metode OnCycleCameraPosition
+        inputActions.Player.DroneFlatten.performed += OnDroneFlattenPerformed;
+        inputActions.Player.DroneExit.performed += OnDroneExitPerformed;
+        inputActions.Player.CycleCameraPosition.performed += OnCycleCameraPositionPerformed;
+        if (snapDetector != null)
+            snapDetector.OnSnapChanged += OnSnapChanged;
     }
 
     private void OnDisable()
     {
-        inputActions.Player.SwitchCamera.performed -= OnSwitchCameraPerformed;
+        inputActions.Player.DroneFlatten.performed -= OnDroneFlattenPerformed;
+        inputActions.Player.DroneExit.performed -= OnDroneExitPerformed;
         inputActions.Player.CycleCameraPosition.performed -= OnCycleCameraPositionPerformed;
+        if (snapDetector != null)
+            snapDetector.OnSnapChanged -= OnSnapChanged;
+
         inputActions.Player.Disable();
     }
-
-    private void OnSwitchCameraPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx) => OnSwitchCamera();                  //Subscrivim el event del input system al metode OnSwitchCamera (cada cop que es prem el boto, es cridara a la funcio)
-    private void OnCycleCameraPositionPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx) => OnCycleCameraPosition();    //Subscrivim el event del input system al metode OnCycleCameraPosition (cada cop que es prem el boto, es cridara a la funcio)
 
     private void Start()
     {
@@ -90,6 +129,221 @@ public class CameraSwitcher : MonoBehaviour
     private void Update()
     {
         HandleTransition();
+    }
+
+    private void OnDroneFlattenPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+    {
+        if (DroneSpeaker.Instance != null && DroneSpeaker.Instance.IsSpeaking) return;
+
+        switch (transitionState)
+        {
+            case TransitionState.Idle:
+                // Tercera persona → dron
+                if (!isOrthoMode) StartSwitchToDrone();
+                break;
+
+            case TransitionState.DroneActive:
+                if (droneHUD != null)
+                    droneHUD.PlayPhotoFlash(() => StartSwitchToOrthoFromDrone());
+                else
+                    StartSwitchToOrthoFromDrone();
+                break;
+        }
+    }
+
+    private void OnDroneExitPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+    {
+        switch (transitionState)
+        {
+            case TransitionState.DroneActive:
+                StartExitDrone();
+                HandleDroneMovement();
+                break;
+
+            case TransitionState.Idle:
+                // Ortogràfic → torna al dron volant
+                if (isOrthoMode) StartReturnToDrone();
+                break;
+        }
+    }
+
+    private void OnCycleCameraPositionPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx) => OnCycleCameraPosition();
+
+    private void OnSnapChanged(bool hasSnap)
+    {
+
+    }
+
+    private void StartSwitchToDrone()
+    {
+        droneCam.transform.SetPositionAndRotation(
+            droneCameraPosition.transform.position,
+            droneCameraPosition.transform.rotation
+        );
+        float rawPitch = droneCameraPosition.transform.localEulerAngles.x;
+        dronePitch = rawPitch > 180f ? rawPitch - 360f : rawPitch;
+
+        brain.DefaultBlend = new CinemachineBlendDefinition(
+            CinemachineBlendDefinition.Styles.EaseInOut,
+            blendDuration
+        );
+
+        droneCam.Priority = 20;
+        perspectiveCam.Priority = 10;
+
+        // Activem el detector
+        if (snapDetector != null)
+            snapDetector.enabled = true;
+
+        if (droneHUD != null)
+        {
+            droneHUD.Initialize(droneCameraPosition.transform, droneMovement, snapDetector);
+        }
+
+        droneMovement.isControlledByPlayer = true;
+
+        transitionState = TransitionState.EnteringDrone;
+    }
+    private void StartExitDrone()
+    {
+        if (droneHUD != null) droneHUD.HideCompletely();
+
+        if (snapDetector != null)
+            snapDetector.enabled = false;
+
+        brain.DefaultBlend = new CinemachineBlendDefinition(
+            CinemachineBlendDefinition.Styles.EaseInOut,
+            blendDuration
+        );
+
+        perspectiveCam.Priority = 20;
+        droneCam.Priority = 10;
+
+        droneMovement.isControlledByPlayer = false;
+        playerStateMachine.SetViewMode(PlayerStateMachine.PlayerViewMode.ThirdPerson);
+
+        transitionState = TransitionState.ExitingDrone;
+    }
+
+    private void StartSwitchToOrthoFromDrone()
+    {
+        //if (droneHUD != null) droneHUD.Hide();
+
+        // Determinem la rotació final — snappejada si hi ha snap, la del dron si no
+        Quaternion finalRotation = snapDetector != null && snapDetector.HasSnap
+            ? snapDetector.GetSnappedRotation()
+            : droneCameraPosition.transform.rotation;
+
+        Vector3 flattenPos = droneCameraPosition.transform.position
+                   - finalRotation * Vector3.forward * orthoFlattenZOffset;
+
+        Vector3 droneFlattenPos = droneCameraPosition.transform.position
+           - finalRotation * Vector3.forward * droneFlattenZOffset;
+
+        _dronePositionBeforeFlatten = droneCameraPosition.transform.position;
+        droneMovement.transform.position = droneFlattenPos;
+        if (droneGameObject != null) droneGameObject.SetActive(false);
+
+        orthoCam.transform.SetPositionAndRotation(flattenPos, finalRotation);
+
+        var orthoLens = orthoCam.Lens;
+        orthoLens.OrthographicSize = CalculateOrthoSizeFromDrone();
+        orthoCam.Lens = orthoLens;
+        orthoCam.Lens = orthoLens;
+
+        mainCamera.orthographic = true;
+
+        brain.DefaultBlend = new CinemachineBlendDefinition(
+            CinemachineBlendDefinition.Styles.EaseInOut,
+            blendDuration
+        );
+
+        orthoCam.Priority = 20;
+        droneCam.Priority = 10;
+
+        playerStateMachine.SetViewMode(PlayerStateMachine.PlayerViewMode.OrthographicView);
+        isOrthoMode = true;
+        IsOrthoMode = true;
+
+        if (orthoCursor != null)
+            orthoCursor.RecalculateScreenPosition();
+
+
+        transitionState = TransitionState.BlendingPosition;
+    }
+
+    private float CalculateOrthoSizeFromDrone()
+    {
+        if (snapDetector == null || snapDetector.BestSnap == null)
+            return currentZone != null ? currentZone.ZoneData.orthographicSize : 10f;
+
+        NavMeshLink link = snapDetector.BestSnap.navMeshLink;
+        Vector3 linkStart = link.transform.TransformPoint(link.startPoint);
+        Vector3 linkEnd = link.transform.TransformPoint(link.endPoint);
+        Vector3 linkMid = (linkStart + linkEnd) * 0.5f;
+
+        float distToLink = Vector3.Distance(droneCameraPosition.transform.position, linkMid);
+        float size = distToLink * orthoSizeDistanceMultiplier;
+
+        return Mathf.Clamp(size, orthoSizeMin, orthoSizeMax);
+    }
+
+    private void StartReturnToDrone()
+    {
+        if (droneHUD != null) droneHUD.ResumeFromOrtho();
+
+        droneMovement.transform.position = _dronePositionBeforeFlatten;
+        droneCam.transform.SetPositionAndRotation(
+            droneCameraPosition.transform.position,
+            droneCameraPosition.transform.rotation
+        );
+
+        // Sortim d'ortogràfic i tornem al dron on estava
+        if (playerOverlayCamera != null)
+            playerOverlayCamera.gameObject.SetActive(false);
+
+        mainCamera.orthographic = false;
+
+        brain.DefaultBlend = new CinemachineBlendDefinition(
+            CinemachineBlendDefinition.Styles.EaseInOut,
+            blendDuration
+        );
+
+        droneCam.Priority = 20;
+        orthoCam.Priority = 10;
+
+        playerStateMachine.SetViewMode(PlayerStateMachine.PlayerViewMode.DroneView);
+        isOrthoMode = false;
+        IsOrthoMode = false;
+
+        transitionState = TransitionState.ReturningToDrone;
+    }
+
+    private void HandleDroneMovement()
+    {
+        Vector2 move = inputActions.Player.DroneMove.ReadValue<Vector2>();
+        Vector2 look = inputActions.Player.DroneLook.ReadValue<Vector2>();
+
+        // Rotem el dron sencer (no la cam)
+        float yaw = droneMovement.transform.eulerAngles.y + look.x * droneRotateSpeed * Time.deltaTime;
+        dronePitch -= look.y * droneRotateSpeed * Time.deltaTime;
+        dronePitch = Mathf.Clamp(dronePitch, -80f, 80f);
+        droneMovement.transform.rotation = Quaternion.Euler(0f, yaw, 0f); // el cos del dron només gira en Y
+        droneCameraPosition.transform.localRotation = Quaternion.Euler(dronePitch, 0f, 0f); // el pitch només a la cam
+
+        // Moviment basat en la direcció de la càmera
+        Transform camT = droneCameraPosition.transform;
+        Vector3 moveDir = camT.forward * move.y + camT.right * move.x;
+        Vector3 newPos = droneMovement.transform.position + moveDir * droneMoveSpeed * Time.deltaTime;
+        newPos.y = Mathf.Clamp(newPos.y, droneMinHeight, droneMaxHeight);
+        droneMovement.transform.position = newPos;
+
+        // La droneCam segueix el droneCameraPosition automàticament si la hi assignes com a Follow
+        // O la sincronitzem manualment:
+        droneCam.transform.SetPositionAndRotation(
+            droneCameraPosition.transform.position,
+            droneCameraPosition.transform.rotation
+        );
     }
 
     //MANAGE ZONES
@@ -122,23 +376,6 @@ public class CameraSwitcher : MonoBehaviour
 
 
     //INPUT CALLBACKS
-
-    private void OnSwitchCamera()
-    {
-        Debug.Log("Switch camera input received. Current mode: " + (isOrthoMode ? "Orthographic" : "Perspective"));
-
-        if (transitionState != TransitionState.Idle) { Debug.LogWarning("Ja hi ha una transicio en proces"); return; } //Ignora si ja tenim una transicio en proces
-
-        if (!isOrthoMode)
-        {
-            if (!CanSwitchToOrtho) { Debug.LogWarning("La zona no permet ortho"); return; }    //Es bloqueja si la zona no permet ortho
-            StartSwitchToOrtho();
-        }
-        else
-        {
-            StartSwitchToPerspective();
-        }
-    }
 
     private void OnCycleCameraPosition()
     {
@@ -180,6 +417,7 @@ public class CameraSwitcher : MonoBehaviour
             orthoCursor.RecalculateScreenPosition();
         }
         transitionState = TransitionState.Idle;
+        GameManager.instance.EvaluateConditions(); //Reavaluem condicions al final del moviment, per si alguna condicio depenia de la posicio de la camara ortografica
     }
 
     //SWITCH LOGIC
@@ -221,6 +459,7 @@ public class CameraSwitcher : MonoBehaviour
         transitionState = TransitionState.BlendingPosition;
         playerStateMachine.SetViewMode(PlayerStateMachine.PlayerViewMode.ThirdPerson); //Notifiquem al PST que estem en perspectiva 3a persona
         isOrthoMode = false;
+        IsOrthoMode = false;
     }
 
     private void ApplyOrthoPosition(int index)
@@ -250,11 +489,49 @@ public class CameraSwitcher : MonoBehaviour
                 break;
 
             case TransitionState.MovingOrthoCamera:
-                //No fa res, el moviment es gestiona per la corrutina MoveOrthoCamera, i quan acaba la corrutina, canvia l'estat a Idle
                 break;
 
             case TransitionState.ShrinkingFOV:
                 ShrinkFOVToNormal();
+                break;
+
+            case TransitionState.EnteringDrone:
+                if (brain.ActiveBlend != null)
+                {
+                    _droneBlendStarted = true; // flag privat: private bool _droneBlendStarted = false;
+                }
+                if (_droneBlendStarted && brain.ActiveBlend == null)
+                {
+                    _droneBlendStarted = false;
+                    if (droneHUD != null) droneHUD.Show();
+                    playerStateMachine.SetViewMode(PlayerStateMachine.PlayerViewMode.DroneView);
+                    transitionState = TransitionState.DroneActive;
+                }
+                break;
+
+            case TransitionState.DroneActive:
+                HandleDroneMovement();
+                break;
+
+            case TransitionState.ExitingDrone:
+                if (brain.ActiveBlend == null)
+                    transitionState = TransitionState.Idle;
+                break;
+
+            case TransitionState.ReturningToDrone:
+                if (brain.ActiveBlend == null)
+                {
+                    float distCamToDrone = Vector3.Distance(
+                        mainCamera.transform.position,
+                        droneCameraPosition.transform.position
+                    );
+
+                    if (distCamToDrone < 0.5f)
+                    {
+                        if (droneGameObject != null) droneGameObject.SetActive(true);
+                        transitionState = TransitionState.DroneActive;
+                    }
+                }
                 break;
         }
     }
@@ -277,6 +554,7 @@ public class CameraSwitcher : MonoBehaviour
 
             playerStateMachine.SetViewMode(PlayerStateMachine.PlayerViewMode.OrthographicView); //Notifiquem al PST que estem en orthographic
             isOrthoMode = true;
+            IsOrthoMode = true;
             transitionState = TransitionState.BlendingPosition;
         }
     }
@@ -298,6 +576,8 @@ public class CameraSwitcher : MonoBehaviour
                 }
 
                 transitionState = TransitionState.Idle;
+
+                GameManager.instance.EvaluateConditions();
             }
         }
       
@@ -315,6 +595,8 @@ public class CameraSwitcher : MonoBehaviour
             lens.FieldOfView = perspectiveFOV;
             perspectiveCam.Lens = lens;
             transitionState = TransitionState.Idle;
+
+            GameManager.instance.EvaluateConditions();
         }
     }
 }

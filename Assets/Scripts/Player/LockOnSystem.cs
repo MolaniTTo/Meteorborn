@@ -71,7 +71,7 @@ public class LockOnSystem : MonoBehaviour
 
     private void OnLockOnStarted(InputAction.CallbackContext ctx)
     {
-        if (cameraSwitcher != null && cameraSwitcher.IsOrthoMode) return;
+        if (cameraSwitcher != null && CameraSwitcher.IsOrthoMode) return;
         TryAcquireLockOn(); // LB premut → intenta fixar un enemic 
     }
 
