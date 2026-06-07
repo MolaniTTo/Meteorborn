@@ -16,7 +16,13 @@ public class EnemicController : MonoBehaviour
 
     public NavMeshAgent agent;
 
+    [SerializeField] GameObject particulesAtac;
+
     [SerializeField] NavMeshAgent fantasmaAgent;
+
+    // NUEVO: Cooldown de ataque
+    [SerializeField] private float attackCooldown = 1f;
+    private float nextAttackTime = 0f;
 
     private Animator animator;
 
@@ -36,6 +42,7 @@ public class EnemicController : MonoBehaviour
     void Update()
     {
         if (perseguint != null && !perseguint.activeInHierarchy) { perseguint = null; }
+
         //Pasar parametres al Animator
         //speed = Mathf.Abs(agent.velocity[0] + agent.velocity[1] + agent.velocity[2]);
         speed = agent.velocity.magnitude; //Velocitat total del agent
@@ -43,7 +50,7 @@ public class EnemicController : MonoBehaviour
         animator.SetBool("attack", false);
 
         //Arbre de comportament
-        if ( Vector3.Distance(transform.position, guardPoint.position) > guardDistance) //Esta lluny de la font?
+        if (Vector3.Distance(transform.position, guardPoint.position) > guardDistance) //Esta lluny de la font?
         {
             MoveToCenter();
         }
@@ -52,10 +59,9 @@ public class EnemicController : MonoBehaviour
             if (energia < 30f) //La energia es mes petita que 30%?
             {
                 MoveToCenter();
-                
+
                 if (Vector3.Distance(transform.position, guardPoint.position) < 2f)
                 {
-                    
                     energia += Time.deltaTime * 2f;
                 }
             }
@@ -65,22 +71,24 @@ public class EnemicController : MonoBehaviour
                 {
                     Debug.Log("Perseguint");
                     MoveToMinion();
+
                     if (Vector3.Distance(perseguint.transform.position, transform.position) < 1.5f)
                     {
                         if (MoreThan2Minions())
                         {
+                            Attack();
                             Debug.Log("Reduir vida grup de minions");
                         }
                         else
                         {
+                            Attack();
                             Debug.Log("Reduir vida minion");
-                            animator.SetBool("attack", true);
                         }
                     }
                 }
                 else
                 {
-                    if (minionDintreRadi != null) //Hi ha un minion dintre del meu radi? 
+                    if (minionDintreRadi != null) //Hi ha un minion dintre del meu radi?
                     {
                         //Esta el minion asignat a un altre enemic?
                         perseguint = minionDintreRadi;
@@ -89,12 +97,34 @@ public class EnemicController : MonoBehaviour
                     else
                     {
                         //Wonder
-                        
+
                         MoveToPoint();
                     }
                 }
             }
         }
+    }
+
+    void Attack()
+    {
+        if (Time.time < nextAttackTime)
+            return;
+
+        nextAttackTime = Time.time + attackCooldown;
+
+        animator.SetBool("attack", true);
+
+        Debug.Log("Nigger");
+        Debug.Log("RaulMarron");
+
+        GameObject fx = Instantiate(
+            particulesAtac,
+            transform.position + transform.forward,
+            transform.rotation
+        );
+
+        GeneradorParticulesDisparo tempFxGen = fx.gameObject.GetComponent<GeneradorParticulesDisparo>();
+        tempFxGen.objectiu = perseguint.transform;
     }
 
     void MoveToMinion()
@@ -139,7 +169,8 @@ public class EnemicController : MonoBehaviour
         }
     }
 
-    bool MoreThan2Minions() {
+    bool MoreThan2Minions()
+    {
         Collider[] objetos = Physics.OverlapSphere(transform.position, 3);
 
         int contador = 0;
@@ -152,7 +183,8 @@ public class EnemicController : MonoBehaviour
             }
         }
 
-        if (contador > 1) {
+        if (contador > 1)
+        {
             return true;
         }
         else
@@ -166,7 +198,8 @@ public class EnemicController : MonoBehaviour
         energia -= tempFlot;
     }
 
-    void OnTriggerEnter(Collider other) {
+    void OnTriggerEnter(Collider other)
+    {
         if (other.CompareTag("minion"))
         {
             minionDintreRadi = other.gameObject;
