@@ -1,8 +1,8 @@
-using System.Collections.Generic;
-using UnityEngine;
 using DG.Tweening;
+using System.Collections.Generic;
 using Unity.AI.Navigation;
-
+using UnityEditor;
+using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
@@ -66,15 +66,35 @@ public class GameManager : MonoBehaviour
 
             bool conditionsMet = count == pc.conditions.Count;
 
+            if (conditionsMet)
+            {
+                Debug.Log($"Condicions complertes: {pc.pathConditionName}");
+            }
+
             //Activem o desactivem NavMeshLinks
             foreach (SinglePath sp in pc.paths)
             {
                 if (sp.navMeshLink != null)
                 {
-                    sp.navMeshLink.enabled = conditionsMet;
-                }
+                    bool orthoOk = !sp.onlyInOrthoMode || CameraSwitcher.IsOrthoMode;
 
-                else { Debug.LogWarning($"NavMeshLink null a: {pc.pathConditionName}"); }
+                    bool snapOk = true;
+                    if (sp.requiredSnapPoint != null && CameraSwitcher.IsOrthoMode)
+                    {
+                        Camera mainCam = Camera.main;
+                        float diffX = Mathf.Abs(Mathf.DeltaAngle(
+                            mainCam.transform.eulerAngles.x,
+                            sp.requiredSnapPoint.transform.eulerAngles.x
+                        ));
+                        float diffY = Mathf.Abs(Mathf.DeltaAngle(
+                            mainCam.transform.eulerAngles.y,
+                            sp.requiredSnapPoint.transform.eulerAngles.y
+                        ));
+                        snapOk = diffX < 5f && diffY < 5f;
+                    }
+
+                    sp.navMeshLink.enabled = conditionsMet && orthoOk && snapOk;
+                }
             }
 
             //Rebake de plataformes de unió si les condicions es compleixen
@@ -116,6 +136,8 @@ public class PathCondition
 public class Condition
 {
     public Transform conditionObject;
+    [Header("Referència opcional (autocompleta els camps de sota)")]
+    public Transform referenceTransform;
     public Vector3 eulerAngle;
     public Vector3 position;
 }
@@ -124,6 +146,9 @@ public class Condition
 public class SinglePath
 {
     public NavMeshLink navMeshLink;
+    public bool onlyInOrthoMode = false;
+    public OrthoSnapPoint requiredSnapPoint;
+    public CameraZone destinationZone;
 }
 
 [System.Serializable]
