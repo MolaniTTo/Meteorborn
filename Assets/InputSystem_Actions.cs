@@ -174,15 +174,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""SwitchCamera"",
-                    ""type"": ""Button"",
-                    ""id"": ""797a0f8d-2794-4440-bc10-b1af7e57d15f"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
                     ""name"": ""CycleCameraPosition"",
                     ""type"": ""Button"",
                     ""id"": ""fc70d936-f5bc-46e9-bf59-bd95efe70c7e"",
@@ -231,6 +222,42 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""name"": ""Help"",
                     ""type"": ""Button"",
                     ""id"": ""f1ed0ffe-5cdb-4477-9986-8509c33befe7"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""DroneLook"",
+                    ""type"": ""Value"",
+                    ""id"": ""dbd61f5e-f31d-443d-8718-67dd29801820"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""DroneMove"",
+                    ""type"": ""Value"",
+                    ""id"": ""4febc6cc-26bf-446a-9822-5bc90763e976"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""DroneExit"",
+                    ""type"": ""Button"",
+                    ""id"": ""fed33c35-2f92-4919-9f4c-6c6f2c776335"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""DroneFlatten"",
+                    ""type"": ""Button"",
+                    ""id"": ""6d553ecf-4a89-494a-a440-d8c9b31ceea8"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -614,17 +641,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""b63f6613-925e-4134-b20a-84a622f91422"",
-                    ""path"": ""<Gamepad>/buttonEast"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""SwitchCamera"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""4e9afbef-22a7-4002-be67-c7875630dd4a"",
                     ""path"": ""<Gamepad>/dpad/right"",
                     ""interactions"": """",
@@ -697,6 +713,50 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Help"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""cb399022-1258-4ef2-af4b-3e8a36ea8b43"",
+                    ""path"": ""<Gamepad>/rightStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DroneLook"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ff86556e-8ffb-49c6-95ae-bab4bef1d6da"",
+                    ""path"": ""<Gamepad>/leftStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DroneMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b53f2582-0ad1-4c50-bc3b-39946fccbf6c"",
+                    ""path"": ""<Gamepad>/buttonWest"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DroneExit"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""45d42632-8cac-45cf-abb5-dce71bffb5ac"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DroneFlatten"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1324,13 +1384,16 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_Previous = m_Player.FindAction("Previous", throwIfNotFound: true);
         m_Player_Next = m_Player.FindAction("Next", throwIfNotFound: true);
         m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
-        m_Player_SwitchCamera = m_Player.FindAction("SwitchCamera", throwIfNotFound: true);
         m_Player_CycleCameraPosition = m_Player.FindAction("CycleCameraPosition", throwIfNotFound: true);
         m_Player_Confirm = m_Player.FindAction("Confirm", throwIfNotFound: true);
         m_Player_CursorMode = m_Player.FindAction("CursorMode", throwIfNotFound: true);
         m_Player_LaunchMinion = m_Player.FindAction("LaunchMinion", throwIfNotFound: true);
         m_Player_LockOn = m_Player.FindAction("LockOn", throwIfNotFound: true);
         m_Player_Help = m_Player.FindAction("Help", throwIfNotFound: true);
+        m_Player_DroneLook = m_Player.FindAction("DroneLook", throwIfNotFound: true);
+        m_Player_DroneMove = m_Player.FindAction("DroneMove", throwIfNotFound: true);
+        m_Player_DroneExit = m_Player.FindAction("DroneExit", throwIfNotFound: true);
+        m_Player_DroneFlatten = m_Player.FindAction("DroneFlatten", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1434,13 +1497,16 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Previous;
     private readonly InputAction m_Player_Next;
     private readonly InputAction m_Player_Sprint;
-    private readonly InputAction m_Player_SwitchCamera;
     private readonly InputAction m_Player_CycleCameraPosition;
     private readonly InputAction m_Player_Confirm;
     private readonly InputAction m_Player_CursorMode;
     private readonly InputAction m_Player_LaunchMinion;
     private readonly InputAction m_Player_LockOn;
     private readonly InputAction m_Player_Help;
+    private readonly InputAction m_Player_DroneLook;
+    private readonly InputAction m_Player_DroneMove;
+    private readonly InputAction m_Player_DroneExit;
+    private readonly InputAction m_Player_DroneFlatten;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -1489,10 +1555,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Sprint => m_Wrapper.m_Player_Sprint;
         /// <summary>
-        /// Provides access to the underlying input action "Player/SwitchCamera".
-        /// </summary>
-        public InputAction @SwitchCamera => m_Wrapper.m_Player_SwitchCamera;
-        /// <summary>
         /// Provides access to the underlying input action "Player/CycleCameraPosition".
         /// </summary>
         public InputAction @CycleCameraPosition => m_Wrapper.m_Player_CycleCameraPosition;
@@ -1516,6 +1578,22 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Help".
         /// </summary>
         public InputAction @Help => m_Wrapper.m_Player_Help;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/DroneLook".
+        /// </summary>
+        public InputAction @DroneLook => m_Wrapper.m_Player_DroneLook;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/DroneMove".
+        /// </summary>
+        public InputAction @DroneMove => m_Wrapper.m_Player_DroneMove;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/DroneExit".
+        /// </summary>
+        public InputAction @DroneExit => m_Wrapper.m_Player_DroneExit;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/DroneFlatten".
+        /// </summary>
+        public InputAction @DroneFlatten => m_Wrapper.m_Player_DroneFlatten;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1569,9 +1647,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Sprint.started += instance.OnSprint;
             @Sprint.performed += instance.OnSprint;
             @Sprint.canceled += instance.OnSprint;
-            @SwitchCamera.started += instance.OnSwitchCamera;
-            @SwitchCamera.performed += instance.OnSwitchCamera;
-            @SwitchCamera.canceled += instance.OnSwitchCamera;
             @CycleCameraPosition.started += instance.OnCycleCameraPosition;
             @CycleCameraPosition.performed += instance.OnCycleCameraPosition;
             @CycleCameraPosition.canceled += instance.OnCycleCameraPosition;
@@ -1590,6 +1665,18 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Help.started += instance.OnHelp;
             @Help.performed += instance.OnHelp;
             @Help.canceled += instance.OnHelp;
+            @DroneLook.started += instance.OnDroneLook;
+            @DroneLook.performed += instance.OnDroneLook;
+            @DroneLook.canceled += instance.OnDroneLook;
+            @DroneMove.started += instance.OnDroneMove;
+            @DroneMove.performed += instance.OnDroneMove;
+            @DroneMove.canceled += instance.OnDroneMove;
+            @DroneExit.started += instance.OnDroneExit;
+            @DroneExit.performed += instance.OnDroneExit;
+            @DroneExit.canceled += instance.OnDroneExit;
+            @DroneFlatten.started += instance.OnDroneFlatten;
+            @DroneFlatten.performed += instance.OnDroneFlatten;
+            @DroneFlatten.canceled += instance.OnDroneFlatten;
         }
 
         /// <summary>
@@ -1628,9 +1715,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Sprint.started -= instance.OnSprint;
             @Sprint.performed -= instance.OnSprint;
             @Sprint.canceled -= instance.OnSprint;
-            @SwitchCamera.started -= instance.OnSwitchCamera;
-            @SwitchCamera.performed -= instance.OnSwitchCamera;
-            @SwitchCamera.canceled -= instance.OnSwitchCamera;
             @CycleCameraPosition.started -= instance.OnCycleCameraPosition;
             @CycleCameraPosition.performed -= instance.OnCycleCameraPosition;
             @CycleCameraPosition.canceled -= instance.OnCycleCameraPosition;
@@ -1649,6 +1733,18 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Help.started -= instance.OnHelp;
             @Help.performed -= instance.OnHelp;
             @Help.canceled -= instance.OnHelp;
+            @DroneLook.started -= instance.OnDroneLook;
+            @DroneLook.performed -= instance.OnDroneLook;
+            @DroneLook.canceled -= instance.OnDroneLook;
+            @DroneMove.started -= instance.OnDroneMove;
+            @DroneMove.performed -= instance.OnDroneMove;
+            @DroneMove.canceled -= instance.OnDroneMove;
+            @DroneExit.started -= instance.OnDroneExit;
+            @DroneExit.performed -= instance.OnDroneExit;
+            @DroneExit.canceled -= instance.OnDroneExit;
+            @DroneFlatten.started -= instance.OnDroneFlatten;
+            @DroneFlatten.performed -= instance.OnDroneFlatten;
+            @DroneFlatten.canceled -= instance.OnDroneFlatten;
         }
 
         /// <summary>
@@ -2024,13 +2120,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSprint(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "SwitchCamera" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnSwitchCamera(InputAction.CallbackContext context);
-        /// <summary>
         /// Method invoked when associated input action "CycleCameraPosition" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
@@ -2072,6 +2161,34 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnHelp(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "DroneLook" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnDroneLook(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "DroneMove" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnDroneMove(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "DroneExit" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnDroneExit(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "DroneFlatten" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnDroneFlatten(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

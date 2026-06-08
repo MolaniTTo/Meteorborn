@@ -88,15 +88,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "SwitchCamera",
-                    "type": "Button",
-                    "id": "797a0f8d-2794-4440-bc10-b1af7e57d15f",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "CycleCameraPosition",
                     "type": "Button",
                     "id": "fc70d936-f5bc-46e9-bf59-bd95efe70c7e",
@@ -145,6 +136,42 @@
                     "name": "Help",
                     "type": "Button",
                     "id": "f1ed0ffe-5cdb-4477-9986-8509c33befe7",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "DroneLook",
+                    "type": "Value",
+                    "id": "dbd61f5e-f31d-443d-8718-67dd29801820",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "DroneMove",
+                    "type": "Value",
+                    "id": "4febc6cc-26bf-446a-9822-5bc90763e976",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "DroneExit",
+                    "type": "Button",
+                    "id": "fed33c35-2f92-4919-9f4c-6c6f2c776335",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "DroneFlatten",
+                    "type": "Button",
+                    "id": "6d553ecf-4a89-494a-a440-d8c9b31ceea8",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -528,17 +555,6 @@
                 },
                 {
                     "name": "",
-                    "id": "b63f6613-925e-4134-b20a-84a622f91422",
-                    "path": "<Gamepad>/buttonEast",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "SwitchCamera",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "4e9afbef-22a7-4002-be67-c7875630dd4a",
                     "path": "<Gamepad>/dpad/right",
                     "interactions": "",
@@ -611,6 +627,50 @@
                     "processors": "",
                     "groups": "",
                     "action": "Help",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "cb399022-1258-4ef2-af4b-3e8a36ea8b43",
+                    "path": "<Gamepad>/rightStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DroneLook",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ff86556e-8ffb-49c6-95ae-bab4bef1d6da",
+                    "path": "<Gamepad>/leftStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DroneMove",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b53f2582-0ad1-4c50-bc3b-39946fccbf6c",
+                    "path": "<Gamepad>/buttonWest",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DroneExit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "45d42632-8cac-45cf-abb5-dce71bffb5ac",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DroneFlatten",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
