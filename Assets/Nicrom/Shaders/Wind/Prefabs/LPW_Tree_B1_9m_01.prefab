@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6759448882051118638}
   - component: {fileID: 6759448882049987822}
   - component: {fileID: 4252890233873196756}
-  - component: {fileID: -293967601822935022}
+  - component: {fileID: -7201165752721004888}
   m_Layer: 0
   m_Name: LPW_Tree_B1_9m_01
   m_TagString: Untagged
@@ -111,23 +111,19 @@ CapsuleCollider:
   m_Height: 9.122329
   m_Direction: 1
   m_Center: {x: 0, y: 4.1611648, z: 0}
---- !u!114 &-293967601822935022
-MonoBehaviour:
+--- !u!208 &-7201165752721004888
+NavMeshObstacle:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6759448882052246062}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SerializedVersion: 0
-  m_OverrideArea: 1
-  m_Area: 1
-  m_OverrideGenerateLinks: 0
-  m_GenerateLinks: 0
-  m_IgnoreFromBuild: 0
-  m_ApplyToChildren: 1
-  m_AffectedAgents: ffffffff
+  serializedVersion: 3
+  m_Shape: 0
+  m_Extents: {x: 0.1, y: 4.415, z: 0.1}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0.001, y: 4.2780004, z: 0.001}
+  m_TimeToStationary: 0.5
