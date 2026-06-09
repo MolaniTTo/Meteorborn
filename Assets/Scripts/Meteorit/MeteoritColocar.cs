@@ -15,6 +15,7 @@ public class MeteoritColocar : MonoBehaviour
     [SerializeField] private TutorialEntry firstTimePlacingTutorial;
     [SerializeField] private bool lastPiecePlaced = false;
     [SerializeField] private TutorialEntry lastPiecePlacedTutorial;
+    [SerializeField] private BlueprintMeteorit blueprintMeteorit;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -27,6 +28,7 @@ public class MeteoritColocar : MonoBehaviour
         {
             if (objectes[i] == other.transform && i < posicions.Length)
             {
+                blueprintMeteorit.ChangeColor(new Color(0.4f,0.7f,0.4f,0.7f), i);
                 ColocarPeça(carry, objectes[i], posicions[i]);
                 break;
             }
