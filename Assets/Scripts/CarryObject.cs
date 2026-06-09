@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using DG.Tweening;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -13,6 +14,7 @@ public class CarryObject : MonoBehaviour
     public int minionsRequired = 2;         // quants minions calen per moure'l
     public Transform destination;           // on s'ha de portar
     public float moveSpeed = 2f;
+    public GameObject carryObject;
 
     [Header("Posicions per als minions")]
     public Transform[] carryPositions;      // punts on es col·loquen els minions al voltant
@@ -36,70 +38,100 @@ public class CarryObject : MonoBehaviour
 
         assignedMinions.Add(minion);
 
-        // Porta el minion a la seva posició de transport
         int index = assignedMinions.Count - 1;
         if (index < carryPositions.Length)
         {
-            minion.agent.SetDestination(carryPositions[index].position);
-            minion.StartCoroutine(WaitAndAttach(minion, carryPositions[index]));
+            // Destí amb la Y del minion, no del slot
+            Vector3 dest = carryPositions[index].position;
+            dest.y = minion.transform.position.y;
+            minion.agent.SetDestination(dest);
+            minion.StartCoroutine(WaitAndReady(minion, carryPositions[index]));
         }
-
-        // Si ja tenim prou minions, comencem a moure l'objecte
-        if (assignedMinions.Count >= minionsRequired && !isBeingCarried)
-            StartCoroutine(CarryToDestination());
     }
 
-    private IEnumerator WaitAndAttach(MinionAI minion, Transform slot)
-    {
-        // Espera fins que el minion arribi a la posició
-        yield return new WaitUntil(() =>
-            !minion.agent.pathPending && minion.agent.remainingDistance < 0.3f);
+    private int readyMinions = 0;
 
-        // Enganxa el minion a la posició de transport
-        minion.agent.enabled = false;
-        minion.transform.SetParent(slot);
-        minion.transform.localPosition = Vector3.zero;
-        minion.transform.localRotation = Quaternion.identity;
+    private IEnumerator WaitAndReady(MinionAI minion, Transform slot)
+    {
+        // Espera fins que arribi al punt (només XZ)
+        yield return new WaitUntil(() =>
+        {
+            Vector3 mPos = minion.transform.position; mPos.y = 0f;
+            Vector3 sPos = slot.position; sPos.y = 0f;
+            return Vector3.Distance(mPos, sPos) < 0.4f;
+        });
+
+        // Gira cap a l'objecte
+        Vector3 dir = transform.position - minion.transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude > 0.01f)
+            minion.transform.rotation = Quaternion.LookRotation(dir);
+
+        readyMinions++;
+        if (readyMinions >= minionsRequired && !isBeingCarried)
+            StartCoroutine(CarryToDestination());
     }
 
     private IEnumerator CarryToDestination()
     {
         isBeingCarried = true;
+
+        // Elevació abans de moure's
+        float floatHeight = 1.5f;
+        float floatDuration = 0.8f;
+        Vector3 raisedPos = carryObject.transform.position + Vector3.up * floatHeight;
+
+        bool elevated = false;
+        carryObject.transform.DOMove(raisedPos, floatDuration).SetEase(Ease.OutSine).OnComplete(() => elevated = true);
+        yield return new WaitUntil(() => elevated);
+
+        // Ara activem el NavMeshAgent per moure's
         if (agent != null) { agent.enabled = true; agent.speed = moveSpeed; }
 
-        // Espera que tots els minions estiguin a posició
-        yield return new WaitForSeconds(0.5f);
+        Transform playerFollow = GameObject.FindGameObjectWithTag("PlayerCarryingFollow")?.transform;
 
-        Transform playerFollow = GameObject.FindGameObjectWithTag("PlayerFollow")?.transform;
 
-        while(true)
+        while (true)
         {
-            if(destination == null) break; // Si no hi ha destí, no fem res
+            // Si ja s'ha alliberat (per MeteoritColocar), sortim
+            if (isDelivered) yield break;
 
-            if(PathHasOffMeshLinks(transform.position, destination.position)) //si el camí té OffMeshLinks, seguim el jugador en lloc del destí per evitar problemes de navegació
+            if (destination == null) break;
+
+            bool hasLinks = PathHasOffMeshLinks(transform.position, destination.position);
+
+            if (hasLinks && playerFollow != null)
             {
-                Vector3 dist = playerFollow.position - transform.position;
-
-                if (playerFollow != null && agent != null && dist.magnitude > 3f)
-                {
+                agent.stoppingDistance = 2f;
+                float distToPlayer = Vector3.Distance(transform.position, playerFollow.position);
+                if (distToPlayer > agent.stoppingDistance)
                     agent.SetDestination(playerFollow.position);
-                }
             }
             else
             {
-                if (agent != null)
-                {
-                    agent.SetDestination(destination.position); //Intenta anar al destí directament si no hi ha OffMeshLinks
-                }
-                yield return new WaitUntil(() => agent != null && !agent.pathPending && agent.remainingDistance < 0.3f); //Espera fins que arribem al destí o estiguem molt a prop
-
-                break; // Hem arribat al destí, sortim del bucle
+                agent.stoppingDistance = 0.3f;
+                agent.SetDestination(destination.position);
+                if (!agent.pathPending && agent.remainingDistance < 0.3f)
+                    break;
             }
 
-            yield return new WaitForSeconds(1f); // Espera una mica abans de tornar a comprovar el camí
+            for (int i = 0; i < assignedMinions.Count; i++)
+            {
+                if (i < carryPositions.Length
+                    && assignedMinions[i] != null
+                    && assignedMinions[i].agent != null
+                    && assignedMinions[i].agent.enabled)
+                {
+                    Vector3 dest = carryPositions[i].position;
+                    dest.y = assignedMinions[i].transform.position.y;
+                    assignedMinions[i].agent.stoppingDistance = 0.5f;
+                    assignedMinions[i].agent.SetDestination(dest);
+                }
+            }
+
+            yield return null;
         }
 
-        OnDelivered();
     }
 
     private bool PathHasOffMeshLinks(Vector3 from, Vector3 to)
@@ -113,25 +145,30 @@ public class CarryObject : MonoBehaviour
         return false;
     }
 
-    private void OnDelivered()
+    public void OnDelivered()
     {
         isDelivered = true;
 
         UniqueID uid = GetComponent<UniqueID>();
         if (uid != null) { WorldManager.Instance?.RegisterMovedObject(uid.ID, transform.position, transform.rotation); }
+        SaveManager.Instance?.Save();
+        Debug.Log($"[CarryObject] Objecte '{name}' entregat a la destinació '{destination.name}'. Minions alliberats i dades guardades.");
+    }
 
-        // Allibera els minions (desapareixen en núvol de fum)
+    public void ReleaseMinions()
+    {
+        isDelivered = true;
+
+        if (agent != null) agent.enabled = false; // atura el CarryObject també
+
         foreach (MinionAI minion in assignedMinions)
         {
-            minion.transform.SetParent(null);
-            // Aquí pots afegir un efecte de fum i Destroy
-            //Destroy(minion.gameObject, 0.1f);
-            minion.PopToSpawn();
+            minion.agent.enabled = true;
+            minion.assignedObject = null;
+            minion.ChangeState(MinionAI.MinionState.Activat);
+            MinionManager.Instance?.RegisterActive(minion);
         }
         assignedMinions.Clear();
-
-        // Aquí pots afegir la lògica de captura (DOTween, efectes, etc.)
-        //Destroy(gameObject, 0.5f);
     }
 
     public bool IsDelivered => isDelivered;

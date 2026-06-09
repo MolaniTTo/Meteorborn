@@ -26,6 +26,8 @@ public class PlayerVisionDetector : MonoBehaviour
     // Referència al player per saber el mode
     private PlayerStateMachine playerStateMachine;
 
+    public bool tutorialActive = false;
+
     void Awake()
     {
         playerStateMachine = GetComponent<PlayerStateMachine>();
@@ -53,8 +55,8 @@ public class PlayerVisionDetector : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(checkInterval);
         while (true)
         {
-            // Només en ThirdPerson
-            if (playerStateMachine.CurrentViewMode == PlayerStateMachine.PlayerViewMode.ThirdPerson)
+            if (!tutorialActive &&
+                playerStateMachine.CurrentViewMode == PlayerStateMachine.PlayerViewMode.ThirdPerson)
                 CheckVision();
             yield return wait;
         }
@@ -89,6 +91,7 @@ public class PlayerVisionDetector : MonoBehaviour
 
     private void OnHelpPressed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
+        if (tutorialActive) return;
         if (DroneSpeaker.Instance != null && DroneSpeaker.Instance.IsSpeaking) return;
 
         bool seesEnemy = SeesObjectOfType<EnemicAI>();

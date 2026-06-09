@@ -50,6 +50,11 @@ public class DroneHUD : MonoBehaviour
     [SerializeField] private Color cyanDim = new Color(0f, 0.86f, 0.71f, 0.45f);
     [SerializeField] private Color snapColor = new Color(0f, 1f, 0.71f, 1f);
 
+    [Header("Tutorial Panel")]
+    [SerializeField] private GameObject tutorialPanel;
+    [SerializeField] private TextMeshProUGUI tutorialText;
+    [SerializeField] private GameObject tutorialContinuePrompt;
+
     // Referencies externes
     private Transform droneCameraTransform;
     private dapMovementScript droneMovement;
@@ -304,5 +309,23 @@ public class DroneHUD : MonoBehaviour
         }
 
         flashImage.gameObject.SetActive(false);
+    }
+
+    public void ShowTutorialText(string text)
+    {
+        if (tutorialPanel != null) tutorialPanel.SetActive(true);
+        if (tutorialText != null) tutorialText.text = text;
+        if (tutorialContinuePrompt != null) tutorialContinuePrompt.SetActive(false);
+    }
+
+    public void ShowTutorialContinuePrompt()
+    {
+        if (tutorialContinuePrompt != null) tutorialContinuePrompt.SetActive(true);
+    }
+
+    public void HideTutorialPanel()
+    {
+        if (tutorialPanel != null) tutorialPanel.SetActive(false);
+        if (tutorialContinuePrompt != null) tutorialContinuePrompt.SetActive(false);
     }
 }
