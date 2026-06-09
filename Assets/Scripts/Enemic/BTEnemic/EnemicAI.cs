@@ -73,6 +73,19 @@ public class EnemicAI : MonoBehaviour
     // ── Animator ──────────────────────────────────────────────────────────────
     [HideInInspector] public Animator animator;
 
+    // ── Audio ─────────────────────────────────────────────────────────────────
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+
+    [SerializeField] private AudioClip footstepsSound;
+    [SerializeField] private AudioClip attackSound;
+    [SerializeField] private AudioClip screamSound;
+
+    [Header("Footsteps")]
+    [SerializeField] private float footstepsCooldown = 0.35f;
+
+    private float footstepsTimer = 0f;
+
     // ── Estat públic ─────────────────────────────────────────────────────────
     [HideInInspector] public HealthComponent targetHealth;
     [HideInInspector] public Vector3 lastSeenPosition;
@@ -105,6 +118,10 @@ public class EnemicAI : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponentInChildren<Animator>();
+
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>();
+
         agent.speed = ghostAgent.speed;
         // Desactivem la rotació automàtica del NavMeshAgent:
         // la rotació la gestionem manualment amb FaceTarget i UpdateScream.
@@ -120,6 +137,7 @@ public class EnemicAI : MonoBehaviour
         UpdateAnimatorSpeed();
         UpdateHealing();
         UpdateScream();
+        UpdateFootsteps();
         rootNode?.Execute(this);
     }
 
@@ -310,6 +328,8 @@ public class EnemicAI : MonoBehaviour
     /// </summary>
     public void OnAttackHit()
     {
+        PlayAttackSound();
+
         if (targetHealth == null || targetHealth.IsDead()) return;
         if (!targetHealth.IsTargetableByEnemy) return;
         if (!IsMinionActivat(targetHealth.gameObject)) return;
@@ -347,6 +367,40 @@ public class EnemicAI : MonoBehaviour
     private void UpdateAnimatorSpeed()
     {
         animator.SetFloat(SpeedHash, agent.velocity.magnitude);
+    }
+
+    private void UpdateFootsteps()
+    {
+        if (audioSource == null || footstepsSound == null)
+            return;
+
+        bool isMoving = agent.velocity.magnitude > 0.2f;
+
+        if (!isMoving)
+        {
+            footstepsTimer = 0f;
+            return;
+        }
+
+        footstepsTimer -= Time.deltaTime;
+
+        if (footstepsTimer <= 0f)
+        {
+            audioSource.PlayOneShot(footstepsSound);
+            footstepsTimer = footstepsCooldown;
+        }
+    }
+
+    private void PlayAttackSound()
+    {
+        if (audioSource != null && attackSound != null)
+            audioSource.PlayOneShot(attackSound);
+    }
+
+    private void PlayScreamSound()
+    {
+        if (audioSource != null && screamSound != null)
+            audioSource.PlayOneShot(screamSound);
     }
 
     private void UpdateHealing()
@@ -394,6 +448,9 @@ public class EnemicAI : MonoBehaviour
         isPreScream = false;
         isScreaming = true;
         screamTimer = screamDuration;
+
+        PlayScreamSound();
+
         animator.SetTrigger(ScreamHash);
     }
 
