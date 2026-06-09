@@ -15,12 +15,13 @@ public class PlayerVisionDetector : MonoBehaviour
     [SerializeField] private TutorialEntry tutorialFirstMinion;
     [SerializeField] private TutorialEntry tutorialFirstStatue;
     [SerializeField] private TutorialEntry tutorialFirstCohet;
+    [SerializeField] private TutorialEntry tutorialFirstBalanca;
 
     [Header("Tutorials — informatiu (botó ajuda)")]
     [SerializeField] private TutorialEntry infoEnemy;
     [SerializeField] private TutorialEntry infoMinion;
     [SerializeField] private TutorialEntry infoStatue;
-
+    [SerializeField] private TutorialEntry infoBalanca;
     // Input
     private InputSystem_Actions inputActions;
 
@@ -69,6 +70,7 @@ public class PlayerVisionDetector : MonoBehaviour
         bool seesMinion = SeesObjectOfType<MinionAI>();
         bool seesStatue = SeesObjectOfType<StatueSavePoint>();
         bool seesCohet = SeesObjectOfType<CarryObject>();
+        bool seesBalanca = SeesObjectOfType<BalancaPuzzle>();
 
         if (seesEnemy)
         {
@@ -92,6 +94,11 @@ public class PlayerVisionDetector : MonoBehaviour
             TutorialManager.Instance?.TriggerIfNew("hasSeenCohet", () =>
                 DroneSpeaker.Instance?.Speak(tutorialFirstCohet));
         }
+        if (seesBalanca)
+        {
+            TutorialManager.Instance?.TriggerIfNew("hasSeenBalanca", () =>
+                DroneSpeaker.Instance?.Speak(tutorialFirstBalanca));
+        }
     }
 
     // ── Botó d'ajuda ──────────────────────────────────────────────────────────
@@ -104,11 +111,12 @@ public class PlayerVisionDetector : MonoBehaviour
         bool seesEnemy = SeesObjectOfType<EnemicAI>();
         bool seesMinion = SeesObjectOfType<MinionAI>();
         bool seesStatue = SeesObjectOfType<StatueSavePoint>();
-        bool seesCohet = SeesObjectOfType<CarryObject>();
+        bool seesBalanca = SeesObjectOfType<BalancaPuzzle>();
 
         if (seesEnemy) { DroneSpeaker.Instance?.Speak(infoEnemy); }
         else if (seesMinion) { DroneSpeaker.Instance?.Speak(infoMinion); }
         else if (seesStatue) { DroneSpeaker.Instance?.Speak(infoStatue); }
+        else if (seesBalanca) { DroneSpeaker.Instance?.Speak(infoBalanca); }
 
     }
 

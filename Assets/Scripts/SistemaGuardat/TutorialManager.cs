@@ -51,10 +51,12 @@ public class TutorialManager : MonoBehaviour
             "hasSeenMinion" => data.hasSeenMinion,
             "hasGetParticles" => data.hasGetParticles,
             "hasSeenStatue" => data.hasSeenStatue,
+            "hasSeenCohet" => data.hasSeenCohet,
             "hasActivatedMinion" => data.hasActivatedMinion,
             "hasThrownMinion" => data.hasThrownMinion,
             "hasPlacedPiece" => data.hasPlacedPiece,
             "hasPlacedAllPieces" => data.hasPlacedAllPieces,
+            "hasSeenBalanca" => data.hasSeenBalanca,
 
 
             _ => false
@@ -69,10 +71,12 @@ public class TutorialManager : MonoBehaviour
             case "hasSeenMinion": data.hasSeenMinion = value; break;
             case "hasGetParticles": data.hasGetParticles = value; break;
             case "hasSeenStatue": data.hasSeenStatue = value; break;
+            case "hasSeenCohet": data.hasSeenCohet = value; break;
             case "hasActivatedMinion" : data.hasActivatedMinion = value; break;
             case "hasThrownMinion" : data.hasThrownMinion = value; break;
             case "hasPlacedPiece" : data.hasPlacedPiece = value; break;
             case "hasPlacedAllPieces" : data.hasPlacedAllPieces = value; break;
+            case "hasSeenBalanca" : data.hasSeenBalanca = value; break;
         }
     }
 }
