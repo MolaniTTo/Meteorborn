@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: Info_Enemy
   m_EditorClassIdentifier: 
   lines:
-  - Tiene una luz roja por lo que mis sistemas consideran que es malo y no le caen
-    bien tus minions
-  - Considera matarlo
+  - Criatura agresiva que habita estas tierras.
+  - Los Makka Pakka parecen temerles enormemente.
+  - "Suelen patrullar cerca de unas extra\xF1as rocas rojas."
+  - "Esas estructuras reciben el nombre de N\xFAcleos Vitales."
+  - Mantente alerta cuando encuentres uno.
+  inputUnlocksAtLine: -1

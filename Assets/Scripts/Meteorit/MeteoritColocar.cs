@@ -11,6 +11,10 @@ public class MeteoritColocar : MonoBehaviour
     [Tooltip("Duració de l'animació de col·locació")]
     [SerializeField] float placeDuration = 1f;
     [SerializeField] Ease placeEase = Ease.OutBack;
+    [SerializeField] private bool firstTimePlacingPiece = true;
+    [SerializeField] private TutorialEntry firstTimePlacingTutorial;
+    [SerializeField] private bool lastPiecePlaced = false;
+    [SerializeField] private TutorialEntry lastPiecePlacedTutorial;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -29,13 +33,20 @@ public class MeteoritColocar : MonoBehaviour
         }
     }
 
+    private int piecesPlaced = 0;
+
     private void ColocarPeça(CarryObject carry, Transform objecte, Transform posicio)
     {
-        carry.ReleaseMinions();
+        if (firstTimePlacingPiece)
+        {
+            firstTimePlacingPiece = false;
+            TutorialManager.Instance?.TriggerIfNew("hasPlacedPiece", () =>
+                DroneSpeaker.Instance?.Speak(firstTimePlacingTutorial));
+        }
 
+        carry.ReleaseMinions();
         NavMeshAgent agent = objecte.GetComponent<NavMeshAgent>();
         if (agent != null) agent.enabled = false;
-
         Rigidbody rb = objecte.GetComponent<Rigidbody>();
         if (rb != null) rb.isKinematic = true;
 
@@ -45,12 +56,18 @@ public class MeteoritColocar : MonoBehaviour
             carry.carryObject.transform.DOLocalRotate(Vector3.zero, placeDuration * 0.5f).SetEase(Ease.OutSine);
         }
 
-        // Una sola crida amb OnComplete
         objecte.DOMove(posicio.position, placeDuration).SetEase(placeEase)
             .OnComplete(() =>
             {
                 carry.OnDelivered();
-                Debug.Log($"[MeteoritColocar] Peça '{objecte.name}' col·locada a '{posicio.name}'.");
+                piecesPlaced++;
+                Debug.Log($"[MeteoritColocar] Peça '{objecte.name}' col·locada. ({piecesPlaced}/{objectes.Length})");
+
+                if (piecesPlaced >= objectes.Length)
+                {
+                    TutorialManager.Instance?.TriggerIfNew("hasPlacedAllPieces", () =>
+                        DroneSpeaker.Instance?.Speak(lastPiecePlacedTutorial));
+                }
             });
 
         objecte.DORotateQuaternion(posicio.rotation, placeDuration).SetEase(placeEase);

@@ -10,12 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aaf922bebb4f0ba47bbe300c733f44ba, type: 3}
-  m_Name: Cursor_Tutorial
+  m_Name: First_Cohet
   m_EditorClassIdentifier: 
   lines:
-  - "Oye, oye, que a\xFAn hay m\xE1s cosas."
-  - "\xBFRecuerdas tu cursor m\xE1gico?"
-  - "Si mantienes pulsado LT aparecer\xE1 delante de ti."
-  - "Despu\xE9s puedes moverlo con el joystick derecho."
-  - "Muy \xFAtil para interactuar con cosas a distancia."
-  - Y espera...
+  - "\xA1Eh, eh, eh!"
+  - "\xA1Mira eso!"
+  - "\xA1Es una pieza de nuestro cohete!"
+  - "Sab\xEDa que alguna ten\xEDa que haber sobrevivido al impacto."
+  - Ve a recogerla.
+  - "Cuantas m\xE1s recuperemos, m\xE1s cerca estaremos de volver a casa."
+  inputUnlocksAtLine: -1

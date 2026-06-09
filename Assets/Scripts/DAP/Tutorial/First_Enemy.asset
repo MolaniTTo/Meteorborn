@@ -13,4 +13,10 @@ MonoBehaviour:
   m_Name: First_Enemy
   m_EditorClassIdentifier: 
   lines:
-  - Ves eso de ah?? Mis sistemas de navegacion creen que es un enemigo.
+  - Mmm...
+  - No me gusta el aspecto de ese bicho.
+  - Por su color y comportamiento, mis sistemas sugieren que es hostil.
+  - "Recomiendo actuar con precauci\xF3n."
+  - "Si necesitas m\xE1s informaci\xF3n sobre esto, no dudes en pulsar la cruceta
+    abajo mirando hacia el objetivo."
+  inputUnlocksAtLine: -1

@@ -25,16 +25,17 @@ public class TutorialInicial : MonoBehaviour
     [SerializeField] private TutorialEntry droneEntry;
 
     [Header("Línies de tutorial — Fase 2 (DroneHUD)")]
-    [SerializeField] private string[] droneMoveLines;
-    [SerializeField] private string[] droneFOVLines;
+    [SerializeField] private TutorialEntry droneMoveEntry;
+    [SerializeField] private TutorialEntry droneFOVEntry;
 
     [Header("Línies de tutorial — Fase 3 (ortho)")]
-    [SerializeField] private string[] orthoMoveLines;
-    [SerializeField] private string[] orthoAcceptLines;
-    [SerializeField] private string[] orthoExitLines;
+    [SerializeField] private TutorialEntry orthoMoveEntry;
+    [SerializeField] private TutorialEntry orthoAcceptEntry;
+    [SerializeField] private TutorialEntry orthoExitEntry;
+
 
     [Header("Línies de tutorial — Fase 4 (sortir dron)")]
-    [SerializeField] private string[] exitDroneLines;
+    [SerializeField] private TutorialEntry exitDroneEntry;
 
     [Header("Línies de tutorial — Fase 5 (cursor)")]
     [SerializeField] private TutorialEntry cursorEntry;
@@ -77,6 +78,7 @@ public class TutorialInicial : MonoBehaviour
             player.canInteract = true;
             player.canExitDrone = true;
             player.canUseCursor = true;
+            player.canMoveOrthoCursor = true;
             yield break;
         }
 
@@ -90,20 +92,39 @@ public class TutorialInicial : MonoBehaviour
     {
         if (entry == null) yield break;
         DroneSpeaker.Instance?.Speak(entry);
-        yield return null; 
+
+        yield return null;
+        yield return null; // espera a que IsSpeaking se active
+
         yield return new WaitUntil(() => DroneSpeaker.Instance != null && !DroneSpeaker.Instance.IsSpeaking);
     }
 
     // Parla i espera que el jugador faci una acció — tanca sol quan es compleix
-    private IEnumerator SpeakAndWaitForButton(TutorialEntry entry, System.Func<bool> condition)
+    private IEnumerator SpeakAndWaitForButton(TutorialEntry entry, System.Func<bool> condition, System.Action onUnlock = null)
     {
         if (entry == null) yield break;
+
+        int unlockAt = entry.inputUnlocksAtLine < 0 ? int.MaxValue : entry.inputUnlocksAtLine;
+        bool unlocked = false;
+
         DroneSpeaker.Instance?.Speak(entry);
 
-        // Espera 2 frames per assegurar que IsTyping s'ha activat
         yield return null;
         yield return null;
-        yield return new WaitUntil(() => DroneSpeaker.Instance != null && !DroneSpeaker.Instance.IsTyping);
+
+        while (DroneSpeaker.Instance != null && DroneSpeaker.Instance.IsSpeaking)
+        {
+            if (!unlocked && DroneSpeaker.Instance.CurrentLineIndex >= unlockAt && !DroneSpeaker.Instance.IsTyping)
+            {
+                onUnlock?.Invoke(); // activa el input justo aquí
+                unlocked = true;
+            }
+            yield return null;
+        }
+
+        // Si el diálogo acabó sin desbloquear (pocas líneas), desbloqueamos igualmente
+        if (!unlocked)
+            onUnlock?.Invoke();
 
         yield return new WaitUntil(condition);
         DroneSpeaker.Instance?.ForceClose();
@@ -127,6 +148,43 @@ public class TutorialInicial : MonoBehaviour
         }
 
         droneHUD.HideTutorialPanel();
+    }
+
+    private IEnumerator SpeakDroneHUDEntry(TutorialEntry entry, System.Func<bool> condition, System.Action onUnlock = null)
+    {
+        if (entry == null) yield break;
+
+        int unlockAt = entry.inputUnlocksAtLine < 0 ? int.MaxValue : entry.inputUnlocksAtLine;
+
+        for (int i = 0; i < entry.lines.Length; i++)
+        {
+            droneHUD.ShowTutorialText(entry.lines[i]);
+
+            if (i < unlockAt)
+            {
+                bool confirmed = false;
+                System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> onConfirm = _ => confirmed = true;
+                inputActions.Player.Confirm.performed += onConfirm;
+                droneHUD.ShowTutorialContinuePrompt();
+                yield return new WaitUntil(() => confirmed);
+                inputActions.Player.Confirm.performed -= onConfirm;
+            }
+            else
+            {
+                onUnlock?.Invoke();
+                onUnlock = null;
+
+                yield return new WaitUntil(condition);
+                droneHUD.HideTutorialPanel();
+                yield return new WaitForSeconds(0.3f);
+                yield break;
+            }
+        }
+
+        // Todas informativas — ejecuta onUnlock aquí antes de salir
+        onUnlock?.Invoke();
+        droneHUD.HideTutorialPanel();
+        yield return new WaitForSeconds(0.3f);
     }
 
     // Mostra text al HUD i espera una acció — tanca sol quan es compleix
@@ -166,100 +224,79 @@ public class TutorialInicial : MonoBehaviour
         yield return SpeakWorldSpace(introEntry);
 
         // Moure's: es tanca quan el jugador es mou
-        player.canMove = true;
-        yield return SpeakAndWaitForButton(moveEntry, () => player.IsMoving);
+        yield return SpeakAndWaitForButton(moveEntry, () => player.IsMoving, () => player.canMove = true);
         yield return new WaitForSeconds(0.5f);
 
         // Entrar al dron: es tanca quan entra al dron
         // Desactivem el check de IsSpeaking al CameraSwitcher durant aquest pas
         droneMovement.UnfreezeFromTutorialPosition();
-        player.canUseDrone = true;
         yield return SpeakAndWaitForButton(droneEntry, () =>
-            player.CurrentViewMode == PlayerStateMachine.PlayerViewMode.DroneView);
+            player.CurrentViewMode == PlayerStateMachine.PlayerViewMode.DroneView,
+            () => player.canUseDrone = true);
 
         // ── FASE 2 — dron ─────────────────────────────────────────────────────
         yield return new WaitForSeconds(0.5f);
 
-        // Moure el dron: es tanca quan s'ha mogut
-        _droneStartPos = droneMovement.transform.position;
-        yield return SpeakDroneHUDAndWait(droneMoveLines.Length > 0 ? droneMoveLines[0] : "Mou el dron", () =>
-            Vector3.Distance(droneMovement.transform.position, _droneStartPos) > 1f);
+        cameraSwitcher.droneMoveBlocked = true;
 
-        // Informació extra del dron si n'hi ha (amb A)
-        if (droneMoveLines.Length > 1)
-        {
-            var extra = new System.Collections.Generic.List<string>();
-            for (int i = 1; i < droneMoveLines.Length; i++) extra.Add(droneMoveLines[i]);
-            yield return SpeakDroneHUD(extra.ToArray());
-        }
+        // droneMoveEntry: inputUnlocksAtLine apunta a "Con el joystick izquierdo..."
+        // El reset de posición ocurre en onUnlock, DESPUÉS de las frases informativas
+        yield return SpeakDroneHUDEntry(droneMoveEntry,
+             () => Vector3.Distance(droneMovement.transform.position, _droneStartPos) > 1f,
+             () => {
+                 _droneStartPos = droneMovement.transform.position;
+                 cameraSwitcher.droneMoveBlocked = false; // desbloquea en unlockAt
+             });
 
-        // Posicionar dron i aplanar: el text es tanca quan el jugador aplana amb B
-        // No separem FOV i aplanar — el text es queda fins que realment aplana
-        player.canUseOrtho = true;
-        yield return SpeakDroneHUDAndWait(
-            droneFOVLines.Length > 0 ? droneFOVLines[0] : "Posiciona el dron mirant cap a tu i prem B per aplanar",
-            () => player.CurrentViewMode == PlayerStateMachine.PlayerViewMode.OrthographicView);
+        yield return SpeakDroneHUDEntry(droneFOVEntry,
+            () => player.CurrentViewMode == PlayerStateMachine.PlayerViewMode.OrthographicView,
+            () => player.canUseOrtho = true);
 
         // ── FASE 3 — ortho ────────────────────────────────────────────────────
-
         yield return new WaitForSeconds(0.3f);
 
-        // Explicació del cursor (amb A, informatiu)
-        if (orthoMoveLines.Length > 0)
-            yield return SpeakDroneHUD(orthoMoveLines);
+        // orthoMoveEntry: inputUnlocksAtLine = -1, todas informativas con A
+        // onUnlock desbloquea el cursor en la línea que marques
+        if (orthoMoveEntry != null)
+            yield return SpeakDroneHUDEntry(orthoMoveEntry, () => true,
+                () => player.canMoveOrthoCursor = true); // solo desbloquea el cursor ortho
 
-        // Acceptar posició: es tanca quan el player s'ha mogut a la posició
-        // La condició és que el player surti d'ortho (va a ThirdPerson després d'acceptar)
-        player.canInteract = true;
         Vector3 playerPosBeforeAccept = playerTransform.position;
-        yield return SpeakDroneHUDAndWait(
-            orthoAcceptLines.Length > 0 ? orthoAcceptLines[0] : "Prem A per acceptar la posició",
-            () => Vector3.Distance(playerTransform.position, playerPosBeforeAccept) > 1.5f);
+        yield return SpeakDroneHUDEntry(orthoAcceptEntry,
+            () => Vector3.Distance(playerTransform.position, playerPosBeforeAccept) > 1.5f,
+            () => StartCoroutine(UnlockInteractNextFrame()));
 
         yield return new WaitForSeconds(0.3f);
 
-        // Desaplanar: es tanca quan surt d'ortho
-        // Primer hem de tornar al dron des de ThirdPerson si cal
-        // El jugador ha d'estar en DroneView per poder desaplanar
-        // Esperem que torni al dron si estava en ThirdPerson
-        if (player.CurrentViewMode == PlayerStateMachine.PlayerViewMode.ThirdPerson)
-        {
-            // El jugador va acceptar posició i va tornar a ThirdPerson
-            // Ara li diem que torni al dron per desaplanar
-            player.canUseDrone = true; // ja estava actiu
-            yield return SpeakDroneHUDAndWait(
-                "Torna al dron per desaplanar la imatge",
-                () => player.CurrentViewMode == PlayerStateMachine.PlayerViewMode.DroneView
-                   || !CameraSwitcher.IsOrthoMode);
-        }
+        // Esperamos que el jugador vuelva al dron (tras aceptar posición va a ThirdPerson)
+        /*yield return new WaitUntil(() =>
+            player.CurrentViewMode == PlayerStateMachine.PlayerViewMode.DroneView ||
+            !CameraSwitcher.IsOrthoMode);*/
 
-        // Desaplanar
-        player.canExitDrone = true;
-        if (orthoExitLines.Length > 0)
-            yield return SpeakDroneHUDAndWait(orthoExitLines[0], () => !CameraSwitcher.IsOrthoMode);
+        // Si volvió al dron y sigue en ortho, explicamos cómo desaplanar
 
-        // FASE 4 — sortir dron
+        yield return SpeakDroneHUDEntry(orthoExitEntry,
+             () => !CameraSwitcher.IsOrthoMode,
+             () => player.canExitDrone = true);
+
+        // ── FASE 4 — sortir dron ──────────────────────────────────────────────
         yield return new WaitForSeconds(0.5f);
-        DroneSpeaker.Instance?.ForceClose();
         droneHUD.HideTutorialPanel();
 
-        yield return SpeakDroneHUDAndWait(
-            exitDroneLines.Length > 0 ? exitDroneLines[0] : "Prem X per sortir del dron",
+        yield return SpeakDroneHUDEntry(exitDroneEntry,
             () => player.CurrentViewMode == PlayerStateMachine.PlayerViewMode.ThirdPerson);
 
-        // Espera llarga per assegurar que la transició ha acabat del tot
         yield return new WaitForSeconds(1.5f);
-        DroneSpeaker.Instance?.ForceClose();
+        droneHUD.HideTutorialPanel();
 
         // FASE 5
         yield return new WaitForSeconds(0.5f);
-        player.canUseCursor = true;
+        yield return SpeakAndWaitForButton(cursorEntry,
+            () => FindFirstObjectByType<MinionCursor>()?.IsActive == true,
+            () => player.canUseCursor = true);
 
-        yield return SpeakAndWaitForButton(cursorEntry, () =>
-            FindFirstObjectByType<MinionCursor>()?.IsActive == true);
-
-        yield return SpeakAndWaitForButton(cursorHoldEntry, () =>
-            FindFirstObjectByType<MinionCursor>()?.CylinderIsActive == true);
+        yield return SpeakAndWaitForButton(cursorHoldEntry,
+            () => FindFirstObjectByType<MinionCursor>()?.CylinderIsActive == true);
 
         // Fi — informatiu, espera A
         yield return SpeakWorldSpace(tutorialEndEntry);
@@ -275,9 +312,16 @@ public class TutorialInicial : MonoBehaviour
         player.canInteract = true;
         player.canExitDrone = true;
         player.canUseCursor = true;
+        player.canMoveOrthoCursor = true;
         TutorialManager.Instance?.CompleteTutorial();
         droneMovement?.UnfreezeFromTutorialPosition();
         if (visionDetector != null) visionDetector.tutorialActive = false;
         isTutorialCompleted = true;
+    }
+
+    private IEnumerator UnlockInteractNextFrame()
+    {
+        yield return null; // espera un frame para que el A actual no dispare canInteract
+        player.canInteract = true;
     }
 }

@@ -10,15 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aaf922bebb4f0ba47bbe300c733f44ba, type: 3}
-  m_Name: First_MinionActivated
+  m_Name: Info_Minion
   m_EditorClassIdentifier: 
   lines:
-  - "\xA1Funciona!"
-  - "\xBFLo has visto?"
-  - Ese Makka Pakka ha reaccionado al Lumen.
-  - "Parece que necesitaba energ\xEDa para despertar."
-  - Interesante...
-  - Muy interesante.
-  - "Quiz\xE1 estos peque\xF1os amigos sean la clave para explorar la isla."
-  - "Si encuentras m\xE1s que necesiten ayuda, ya sabes qu\xE9 hacer.."
+  - "Peque\xF1a criatura pac\xEDfica."
+  - "Parece d\xE9bil cuando est\xE1 sola."
+  - "Sin embargo, se vuelve m\xE1s resistente cuando se re\xFAne con otros de su
+    especie."
+  - "Mis an\xE1lisis indican una notable sensibilidad a la luz."
+  - 'Registrado en mi base de datos como: Makka Pakka.'
   inputUnlocksAtLine: -1

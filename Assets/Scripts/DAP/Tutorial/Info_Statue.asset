@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: Info_Statue
   m_EditorClassIdentifier: 
   lines:
-  - Otorga el nombre de Nucleo Astral
-  - Una piedra misteriosamente luminosa, generadora de las particulas Lumis.
-  - Creo que puedes interactuar con ella para algo mas...
+  - "Fuente de energ\xEDa desconocida."
+  - "Genera constantemente peque\xF1as part\xEDculas luminosas."
+  - "He decidido llamar a esas part\xEDculas 'L\xFAmenes'."
+  - "Todav\xEDa no s\xE9 para qu\xE9 sirven."
+  - Pero estoy bastante seguro de que son importantes.
+  inputUnlocksAtLine: -1

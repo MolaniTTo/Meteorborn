@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aaf922bebb4f0ba47bbe300c733f44ba, type: 3}
+  m_Name: CohetCompleted
+  m_EditorClassIdentifier: 
+  lines:
+  - Espera...
+  - Espera, espera, espera...
+  - "\xA1Est\xE1 completo!"
+  - "\xA1Lo has conseguido!"
+  - "Todas las piezas del cohete est\xE1n en su sitio."
+  - "No me lo creo... pero est\xE1 funcionando."
+  - "Los sistemas est\xE1n respondiendo."
+  - "Propulsi\xF3n lista."
+  - "Navegaci\xF3n online."
+  - Esto es real.
+  - "De verdad vamos a salir de aqu\xED."
+  - "Has hecho un trabajo incre\xEDble."
+  - "Bueno, supongo que yo tambi\xE9n he ayudado un poco."
+  - "Pero el m\xE9rito es todo tuyo."
+  - Es hora de despegar.
+  - Vamos a volver a casa.
+  inputUnlocksAtLine: 0
