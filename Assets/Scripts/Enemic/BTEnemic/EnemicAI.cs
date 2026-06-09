@@ -94,6 +94,10 @@ public class EnemicAI : MonoBehaviour
 
     // ── Atacants ──────────────────────────────────────────────────────────────
     private List<Transform> attackers = new List<Transform>();
+    private Transform currentTarget;
+    [SerializeField] private GameObject attackPSPrefab;
+    [SerializeField] private Transform firePoint;
+    [SerializeField] private Transform target;
 
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -306,17 +310,19 @@ public class EnemicAI : MonoBehaviour
     /// </summary>
     public void OnAttackHit()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, attackRadius);
-        foreach (Collider col in hits)
+        if (targetHealth == null || targetHealth.IsDead()) return;
+        if (!targetHealth.IsTargetableByEnemy) return;
+        if (!IsMinionActivat(targetHealth.gameObject)) return;
+
+        targetHealth.TakeDamage(damagedEnergiaPerSecond);
+
+        // Llança el PS cap al target real
+        if (attackPSPrefab != null && firePoint != null)
         {
-            HealthComponent hc = col.GetComponent<HealthComponent>();
-            if (hc == null || hc == GetComponent<HealthComponent>()) continue;
-            if (hc.IsDead() || !hc.IsTargetableByEnemy) continue;
-            if (!IsMinionActivat(col.gameObject)) continue;
-            hc.TakeDamage(damagedEnergiaPerSecond);
+            GameObject go = Instantiate(attackPSPrefab);
+            go.GetComponent<GeneradorParticulesDisparo>().Init(firePoint, targetHealth.transform);
         }
     }
-
     // ── Helpers pels nodes ────────────────────────────────────────────────────
 
     /// <summary>
@@ -354,12 +360,14 @@ public class EnemicAI : MonoBehaviour
     public void RegisterAttacker(Transform attacker)
     {
         if (!attackers.Contains(attacker)) attackers.Add(attacker);
+        if (currentTarget == null) currentTarget = attacker;
     }
 
     public void UnregisterAttacker(Transform attacker)
     {
         attackers.Remove(attacker);
-        if (attackers.Count > 0) FaceTarget(attackers[0].position);
+        if (currentTarget == attacker)
+            currentTarget = attackers.Count > 0 ? attackers[0] : null;
     }
 
     // ── Scream ────────────────────────────────────────────────────────────────
@@ -446,6 +454,8 @@ public class EnemicAI : MonoBehaviour
     {
         targetHealth = null;
         lastScreamTarget = null;
+        currentTarget = null;  
+        attackers.Clear();  
     }
 
     // ── LookAround ────────────────────────────────────────────────────────────
@@ -470,6 +480,9 @@ public class EnemicAI : MonoBehaviour
     {
         UniqueID uid = GetComponent<UniqueID>();
         if (uid != null) { WorldManager.Instance?.RegisterEnemyDead(uid.ID); }
+
+        currentTarget = null; 
+        attackers.Clear();
 
         Debug.Log($"{gameObject.name} ha mort.");
         animator.SetTrigger(MortHash);

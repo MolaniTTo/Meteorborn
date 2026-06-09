@@ -5738,7 +5738,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &462496370
 Transform:
   m_ObjectHideFlags: 0
@@ -5819,10 +5819,6 @@ MonoBehaviour:
     m_ActionName: 'Player/Sprint[/Keyboard/leftShift]'
   - m_PersistentCalls:
       m_Calls: []
-    m_ActionId: 797a0f8d-2794-4440-bc10-b1af7e57d15f
-    m_ActionName: Player/SwitchCamera
-  - m_PersistentCalls:
-      m_Calls: []
     m_ActionId: fc70d936-f5bc-46e9-bf59-bd95efe70c7e
     m_ActionName: Player/CycleCameraPosition
   - m_PersistentCalls:
@@ -5889,6 +5885,22 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 5319357d-667d-42d7-87e2-a007e34727d3
     m_ActionName: UI/Back
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: dbd61f5e-f31d-443d-8718-67dd29801820
+    m_ActionName: 'Player/DroneLook[/XInputControllerWindows/rightStick]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 4febc6cc-26bf-446a-9822-5bc90763e976
+    m_ActionName: 'Player/DroneMove[/XInputControllerWindows/leftStick]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: fed33c35-2f92-4919-9f4c-6c6f2c776335
+    m_ActionName: 'Player/DroneExit[/XInputControllerWindows/buttonWest]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 6d553ecf-4a89-494a-a440-d8c9b31ceea8
+    m_ActionName: 'Player/DroneFlatten[/XInputControllerWindows/buttonEast]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: Gamepad
   m_DefaultActionMap: UI
@@ -8191,7 +8203,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1158174350}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &1158174353
 Camera:
   m_ObjectHideFlags: 0
@@ -12584,7 +12596,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1920074998
 RectTransform:
   m_ObjectHideFlags: 0

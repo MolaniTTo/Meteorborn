@@ -70,6 +70,16 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private int MaxParticles;
     [SerializeField] private int numberOfParticles;
 
+    [HideInInspector] public bool canMove = false;
+    [HideInInspector] public bool canUseDrone = false;
+    [HideInInspector] public bool canUseOrtho = false;
+    [HideInInspector] public bool canInteract = false;
+    [HideInInspector] public bool canExitDrone = false;
+    [HideInInspector] public bool canUseCursor = false;
+
+    public bool IsMoving => agent.velocity.sqrMagnitude > 0.1f;
+    public bool HasLookInput { get; private set; } = false;
+
     void Awake()
     {
         inputActions = new InputSystem_Actions();
@@ -131,6 +141,8 @@ public class PlayerStateMachine : MonoBehaviour
 
     private void OnConfirmPerformed(CallbackContext ctx)
     {
+        if (!canInteract) return;
+
         if (playerViewMode != PlayerViewMode.OrthographicView) return;
         if (traversingLink) return;
 
@@ -232,6 +244,8 @@ public class PlayerStateMachine : MonoBehaviour
     {
         moveInput = moveAction.ReadValue<Vector2>();
 
+        if (!canMove) moveInput = Vector2.zero;
+
         if (playerViewMode == PlayerViewMode.DroneView) return;
 
         if (playerViewMode == PlayerViewMode.ThirdPerson)
@@ -270,6 +284,8 @@ public class PlayerStateMachine : MonoBehaviour
 
     private void HandleWalking()
     {
+        if (!canMove) { HandleIdle(); return; }
+
         Vector3 camForward = cameraTransform.forward; camForward.y = 0f; camForward.Normalize();
         Vector3 camRight = cameraTransform.right; camRight.y = 0f; camRight.Normalize();
         Vector3 moveDirection = camForward * moveInput.y + camRight * moveInput.x;

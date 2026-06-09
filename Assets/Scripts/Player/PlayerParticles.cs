@@ -7,8 +7,8 @@ public class PlayerParticles : MonoBehaviour
     public static PlayerParticles Instance { get; private set; }
 
     [Header("Particules de llum")]
-    public int numberOfParticles = 20;  
-    [SerializeField] private int maxParticles = 200;
+    public int numberOfParticles = 0;  
+    [SerializeField] private int maxParticles = 30;
     public int numberOfRedParticles = 0; //Partícules vermelles, encara no implementades
 
 

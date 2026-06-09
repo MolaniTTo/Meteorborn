@@ -90,6 +90,7 @@ public class MinionManager : MonoBehaviour
     public void RegisterMinion(MinionAI minion)
     {
         if (!allMinions.Contains(minion))
+            Debug.Log($"[Minions] Registrant minion: {minion.name} (total abans: {allMinions.Count})");
             allMinions.Add(minion);
     }
 

@@ -82,7 +82,13 @@ public class MinionCursor : MonoBehaviour
 
     void Update()
     {
-        if(playerStateMachine != null && playerStateMachine.CurrentViewMode == PlayerStateMachine.PlayerViewMode.OrthographicView)
+        if (!playerStateMachine.canUseCursor)
+        {
+            if (isCursorActive) ExitCursorMode();
+            return;
+        }
+
+        if (playerStateMachine != null && playerStateMachine.CurrentViewMode == PlayerStateMachine.PlayerViewMode.OrthographicView)
         {
             if(isCursorActive) ExitCursorMode();
             return;

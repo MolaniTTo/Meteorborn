@@ -28,7 +28,7 @@ public class Hover3D : MonoBehaviour
         {
             if (hit.collider.gameObject == gameObject)
             {
-                Debug.Log("Mouse sobre: " + gameObject.name);
+                //Debug.Log("Mouse sobre: " + gameObject.name);
                 // Escala objetivo: 1.5 veces más grande
                 escalaObjetivo = escalaInicial * 1.5f;
             }

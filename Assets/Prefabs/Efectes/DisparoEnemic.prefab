@@ -45,7 +45,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 986bb192d551bde4fbeda16d51255f02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  origen: {fileID: 0}
   objectiu: {fileID: 0}
+  velocityScale: 1.5
+  followPoints: 1
 --- !u!1 &5129078574480090616
 GameObject:
   m_ObjectHideFlags: 0

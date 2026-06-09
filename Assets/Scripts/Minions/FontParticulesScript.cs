@@ -1,49 +1,92 @@
+// FontParticulesScript.cs
 using UnityEngine;
+using System.Collections.Generic;
 
 public class FontParticulesScript : MonoBehaviour
 {
-    [SerializeField] GameObject particula;
+    [Header("Configuració")]
+    [SerializeField] private GameObject particulaPrefab;
+    [SerializeField] private float spawnInterval = 1.5f;
+    [SerializeField] private int maxParticulesEnArea = 5;
+    [SerializeField] private float spawnRadius = 1.5f;
 
-    private bool generar = false;
-
-    private float contador = 0f;
+    [Header("Audio")]
+    [SerializeField] private AudioClip spawnPop;
     private AudioSource audioSource;
-    [SerializeField] AudioClip spawnPop;
 
-    private void Start() {
-        audioSource = gameObject.GetComponent<AudioSource>();
-    }
+    // Pool
+    private List<ParticulaScript> pool = new List<ParticulaScript>();
+    private List<ParticulaScript> activeParticules = new List<ParticulaScript>();
 
-    // Update is called once per frame
-    void Update()
+    private bool playerADins = false;
+    private float contador = 0f;
+
+    private void Start()
     {
-        if (generar)
+        audioSource = GetComponent<AudioSource>();
+
+        // Pre-instancia el pool
+        for (int i = 0; i < maxParticulesEnArea; i++)
         {
-            contador += Time.deltaTime;
-
-            if (contador > 0.80f)
-            {
-                Vector3 tempVector = new Vector3(transform.position.x + Random.Range(-1f, 1f), transform.position.y, transform.position.z + Random.Range(-1f, 1f));
-                Instantiate(particula, tempVector, Quaternion.identity);
-
-                audioSource.PlayOneShot(spawnPop);
-
-                contador = 0f;
-            }
+            GameObject go = Instantiate(particulaPrefab, transform);
+            go.SetActive(false);
+            ParticulaScript ps = go.GetComponent<ParticulaScript>();
+            pool.Add(ps);
         }
     }
 
-    private void OnTriggerEnter(Collider other) {
-        if (other.CompareTag("Player"))
+    private void Update()
+    {
+        //if (!playerADins) return;
+        if (activeParticules.Count >= maxParticulesEnArea) return;
+
+        contador += Time.deltaTime;
+        if (contador >= spawnInterval)
         {
-            generar = true;
+            contador = 0f;
+            SpawnParticula();
         }
     }
 
-    private void OnTriggerExit(Collider other) {
-        if (other.CompareTag("Player"))
-        {
-            generar = false;
-        }
+    private void SpawnParticula()
+    {
+        ParticulaScript p = GetFromPool();
+        if (p == null) return;
+
+        // Posició aleatoria al voltant de la font, a l'alçada de la font
+        Vector2 rand = Random.insideUnitCircle * spawnRadius;
+        Vector3 pos = transform.position + new Vector3(rand.x, 0f, rand.y);
+        p.transform.position = pos;
+        p.gameObject.SetActive(true);
+        p.Init(this);
+        activeParticules.Add(p);
+
+        if (audioSource != null && spawnPop != null)
+            audioSource.PlayOneShot(spawnPop);
+    }
+
+    public void ReturnToPool(ParticulaScript p)
+    {
+        p.gameObject.SetActive(false);
+        activeParticules.Remove(p);
+        pool.Add(p);
+    }
+
+    private ParticulaScript GetFromPool()
+    {
+        if (pool.Count == 0) return null;
+        ParticulaScript p = pool[pool.Count - 1];
+        pool.RemoveAt(pool.Count - 1);
+        return p;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player")) playerADins = true;
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player")) playerADins = false;
     }
 }

@@ -23,6 +23,8 @@ public class MinionSaveData
     public string spawnerID;
     public string state;
     public float posX, posY, posZ;
+    public float scaleX, scaleY, scaleZ;
+    public float health;
 }
 
 [Serializable]
@@ -50,4 +52,5 @@ public class TutorialSaveData
     public bool hasUsedParticles;
     public bool hasGetRedParticles;
     public bool hasSeenStatue;
+    public bool tutorialCompleted; 
 }

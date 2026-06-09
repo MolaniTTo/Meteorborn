@@ -18,6 +18,13 @@ public class MinionAI : MonoBehaviour
     [HideInInspector] public MinionScaleController scaleController;
     [HideInInspector] public MinionVisualController visualController;
     [HideInInspector] public bool nearDeathInitialized = false;
+    [SerializeField] private GameObject attackPSPrefab;
+    [SerializeField] private Transform firePoint;
+    [SerializeField] private Transform target;
+    [SerializeField] private GameObject carryPSPrefab;
+    [SerializeField] private Transform carryPoint;
+    [SerializeField] private Transform carryTarget;
+    public HealthComponent healthComponent;
     public bool isAtMinScale => scaleController != null && scaleController.IsAtMinScale;
 
     public BTNode rootNode;
@@ -159,7 +166,28 @@ public class MinionAI : MonoBehaviour
 
     public void ChangeState(MinionState newState)
     {
+        if (currentState == MinionState.Treballant && newState != MinionState.Treballant)
+        {
+            if (animator != null)
+                animator.SetLayerWeight(animator.GetLayerIndex("UpperLayer"), 0f);
+            //parar el carry PS si es necesario (opcional, dependiendo de cómo quieras manejar los efectos visuales al dejar de cargar un objeto)
+             if (carryPSPrefab != null)
+             {
+                carryPSPrefab.GetComponentInChildren<ParticleSystem>().Stop();
+
+                foreach (GeneradorParticulesDisparo ps in FindObjectsByType<GeneradorParticulesDisparo>(FindObjectsSortMode.None))
+                {
+                    if (ps.origen == carryPoint && ps.objectiu == carryTarget)
+                    {
+                        Destroy(ps.gameObject);
+                    }
+                }
+
+            }
+        }
+
         currentState = newState;
+
         if (newState != MinionState.Activat && followCoroutine != null)
         {
             StopCoroutine(followCoroutine);
@@ -167,6 +195,18 @@ public class MinionAI : MonoBehaviour
         }
         if (newState == MinionState.Activat)
             StartFollowing();
+        if (newState == MinionState.Treballant)
+        {
+            if (animator != null)
+                animator.SetLayerWeight(animator.GetLayerIndex("UpperLayer"), 1f);
+
+            carryTarget = assignedObject.transform;
+            if (carryTarget != null)
+            {
+                GameObject go = Instantiate(carryPSPrefab);
+                go.GetComponent<GeneradorParticulesDisparo>().Init(carryPoint, carryTarget);
+            }
+        }
     }
 
     public void PopToSpawn()
@@ -255,10 +295,10 @@ public class MinionAI : MonoBehaviour
             MinionManager.Instance.ClearPendingLaunch();
 
         Debug.Log($"[MinionAI] {name} ha aterrat");
-        Collider[] hits = Physics.OverlapSphere(transform.position, 1.5f);
+        Collider[] hits = Physics.OverlapSphere(transform.position, 0.1f);
         foreach (Collider col in hits)
         {
-            if (col.CompareTag("Enemy") && col.GetComponent<HealthComponent>().currentHealth > 0) { AssignAttackTarget(col.transform); return; }
+            if (col.CompareTag("Enemy") && col.GetComponent<HealthComponent>().currentHealth > 0) { Debug.Log("Enemic detectat");  AssignAttackTarget(col.transform); return; }
             CarryObject carry = col.GetComponent<CarryObject>();
             if (carry != null) { AssignCarryObject(carry); return; }
         }
@@ -294,6 +334,16 @@ public class MinionAI : MonoBehaviour
         animator.SetTrigger("CasiMort");
         nearDeathInitialized = false; // perquè BTCasiMort s'inicialitzi bé
         ChangeState(MinionState.CasiMort);
+    }
+
+    public void LaunchAttack()
+    {
+        target = attackTarget;
+        if (target != null)
+        {
+            GameObject go = Instantiate(attackPSPrefab);
+            go.GetComponent<GeneradorParticulesDisparo>().Init(firePoint, target);
+        }
     }
 
 

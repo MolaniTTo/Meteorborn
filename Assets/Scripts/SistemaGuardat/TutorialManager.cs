@@ -13,6 +13,13 @@ public class TutorialManager : MonoBehaviour
         if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+
+        if (SaveManager.Instance != null && SaveManager.Instance.HasPendingTutorialData())
+        {
+            data = SaveManager.Instance.ConsumePendingTutorialData();
+            Debug.Log("[TutorialManager] Dades de tutorial recuperades del SaveManager.");
+        }
     }
 
     // Crida això des de qualsevol sistema: TutorialManager.Instance.TriggerIfNew("hasSeenEnemy", MostraPanel);
@@ -26,6 +33,15 @@ public class TutorialManager : MonoBehaviour
 
     public TutorialSaveData GetSaveData() => data;
     public void LoadSaveData(TutorialSaveData loaded) => data = loaded;
+
+    public bool IsTutorialCompleted() => data.tutorialCompleted;
+
+    public void CompleteTutorial()
+    {
+        if (data.tutorialCompleted) return;
+        data.tutorialCompleted = true;
+        SaveManager.Instance?.Save();
+    }
 
     private bool GetFlag(string flag)
     {

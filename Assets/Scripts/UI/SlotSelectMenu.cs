@@ -132,6 +132,8 @@ public class SlotSelectMenu : MonoBehaviour
     private void LoadAndEnterGame(int slot)
     {
         confirmDialog.Hide();
+        SaveManager.Instance.SetActiveSlot(slot);
+        SaveManager.Instance.Load(); 
         SceneManager.sceneLoaded += OnGameSceneLoaded;
         SceneManager.LoadScene(gameSceneName);
     }
@@ -140,6 +142,7 @@ public class SlotSelectMenu : MonoBehaviour
     {
         SaveManager.Instance.SetActiveSlot(slot);
         SaveManager.Instance.DeleteSlot(slot);
+        SaveManager.Instance.NewGame();
         confirmDialog.Hide();
         SceneManager.LoadScene(gameSceneName);
     }
@@ -147,7 +150,6 @@ public class SlotSelectMenu : MonoBehaviour
     private void OnGameSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         SceneManager.sceneLoaded -= OnGameSceneLoaded;
-        SaveManager.Instance.Load();
     }
 
     private void CloseDialogAndReturn()

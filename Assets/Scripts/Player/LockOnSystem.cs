@@ -168,9 +168,8 @@ public class LockOnSystem : MonoBehaviour
         if (lockOnCamera != null)
         {
             //lockOnCamera.Target.TrackingTarget = lockedTarget; // Look At → l'enemic
-            lockOnCamera.Priority = 20;
+            lockOnCamera.Priority = 31;
         }
-        if (normalCamera != null) normalCamera.Priority = 10;
 
         if (lockOnReticle != null) lockOnReticle.SetActive(true);
 
@@ -187,7 +186,6 @@ public class LockOnSystem : MonoBehaviour
             //lockOnCamera.Target.TrackingTarget = null;
             lockOnCamera.Priority = 5;
         }
-        if (normalCamera != null) normalCamera.Priority = 10;
 
         if (lockOnReticle != null) lockOnReticle.SetActive(false);
 

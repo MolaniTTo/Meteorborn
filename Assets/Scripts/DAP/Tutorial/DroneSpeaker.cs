@@ -25,6 +25,13 @@ public class DroneSpeaker : MonoBehaviour
     private bool isTyping = false;
     private bool isSpeaking = false;
 
+    public bool IsTyping => isTyping; 
+
+    public void ForceClose()
+    {
+        if (typingCoroutine != null) StopCoroutine(typingCoroutine);
+        Close();
+    }
     void Awake()
     {
         if (Instance != null) { Destroy(gameObject); return; }
