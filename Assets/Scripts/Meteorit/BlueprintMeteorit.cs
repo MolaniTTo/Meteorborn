@@ -10,7 +10,7 @@ public class BlueprintMeteorit : MonoBehaviour
     {
         for (int i = 0; i < imagenes.Length; i++)
         {
-            ChangeColor(new Color(0,0,0,0.2f), i);
+            ChangeColor(new Color(0.6f,0,0,0.4f), i);
         }
         
     }
