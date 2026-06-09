@@ -13,7 +13,11 @@ MonoBehaviour:
   m_Name: First_Statue
   m_EditorClassIdentifier: 
   lines:
-  - Amo...
-  - Estoy detectando alta luminosidad en esa piedra.
+  - "Estoy detectando una enorme concentraci\xF3n de energ\xEDa."
+  - Ese objeto emite una luminosidad fuera de lo normal.
   - Mis neurotransmisores creen que esa luz podria ser poderosa.
-  - Sugiero acercarnos con precaucion.
+  - Sugiero acercarnos con cuidado.
+  - Sugiero acercarnos con cuidado.
+  - "Si necesitas un repaso o m\xE1s detalles, la cruceta abajo mirando hacia el
+    objetivo es tu amiga."
+  inputUnlocksAtLine: -1

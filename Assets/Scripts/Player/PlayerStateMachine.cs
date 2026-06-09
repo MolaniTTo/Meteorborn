@@ -76,6 +76,7 @@ public class PlayerStateMachine : MonoBehaviour
     [HideInInspector] public bool canInteract = false;
     [HideInInspector] public bool canExitDrone = false;
     [HideInInspector] public bool canUseCursor = false;
+    [HideInInspector] public bool canMoveOrthoCursor = false;
 
     public bool IsMoving => agent.velocity.sqrMagnitude > 0.1f;
     public bool HasLookInput { get; private set; } = false;
@@ -244,24 +245,28 @@ public class PlayerStateMachine : MonoBehaviour
     {
         moveInput = moveAction.ReadValue<Vector2>();
 
-        if (!canMove) moveInput = Vector2.zero;
+        // Solo zeroa moveInput para movimiento a pie, NO para el cursor ortho
+        Vector2 footMoveInput = canMove ? moveInput : Vector2.zero;
 
-        if (playerViewMode == PlayerViewMode.DroneView) return;
+        if (playerViewMode == PlayerViewMode.DroneView)
+        {
+            moveInput = footMoveInput;
+            return;
+        }
 
         if (playerViewMode == PlayerViewMode.ThirdPerson)
         {
-            bool lockedOn = LockOnSystem.Instance != null && LockOnSystem.Instance.IsLockedOn;
+            moveInput = footMoveInput; // aplica el bloqueo solo en tercera persona
 
+            bool lockedOn = LockOnSystem.Instance != null && LockOnSystem.Instance.IsLockedOn;
             if (lockedOn)
             {
-                // Mode lock-on orbital
                 currentState = moveInput.sqrMagnitude > 0.01f
                     ? PlayerState.LockOnMoving
                     : PlayerState.LockOnIdle;
             }
             else
             {
-                // Mode normal (LT cursor o lliure)
                 if (currentState == PlayerState.LockOnIdle || currentState == PlayerState.LockOnMoving)
                     currentState = PlayerState.Idle;
 
@@ -272,7 +277,11 @@ public class PlayerStateMachine : MonoBehaviour
         }
 
         if (playerViewMode == PlayerViewMode.OrthographicView && orthoCursor != null)
-            orthoCursor.SetMoveInput(moveInput);
+        {
+            // moveInput SIN zeroing por canMove — el cursor tiene su propio flag
+            orthoCursor.SetMoveInput(canMoveOrthoCursor ? moveAction.ReadValue<Vector2>() : Vector2.zero);
+            moveInput = footMoveInput; // el movimiento a pie sigue bloqueado
+        }
     }
 
     // ── States ────────────────────────────────────────────────────────────────

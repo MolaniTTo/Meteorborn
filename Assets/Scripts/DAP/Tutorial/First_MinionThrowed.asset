@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aaf922bebb4f0ba47bbe300c733f44ba, type: 3}
+  m_Name: First_MinionThrowed
+  m_EditorClassIdentifier: 
+  lines:
+  - "\xA1Eh!"
+  - "\xBFAcabas de lanzar a un Makka Pakka?"
+  - No esperaba menos de ti.
+  - Por suerte parece que le ha gustado.
+  - Escucha, esto es importante.
+  - No son muy fuertes por separado...
+  - Pero cuando trabajan juntos pueden plantar cara a enemigos bastante peligrosos.
+  - Y eso no es todo.
+  - "Tambi\xE9n pueden ayudarte a mover objetos que t\xFA solo no podr\xEDas desplazar."
+  - "Incluso podr\xEDan echar una mano con algunas piezas del cohete."
+  - "Parece que estos peque\xF1ines son mucho m\xE1s \xFAtiles de lo que imaginaba."
+  - "Cu\xEDdalos bien."
+  - "Tengo la sensaci\xF3n de que los necesitaremos."
+  inputUnlocksAtLine: -1

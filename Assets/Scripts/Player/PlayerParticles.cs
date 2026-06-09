@@ -10,7 +10,9 @@ public class PlayerParticles : MonoBehaviour
     public int numberOfParticles = 0;  
     [SerializeField] private int maxParticles = 30;
     public int numberOfRedParticles = 0; //Partícules vermelles, encara no implementades
+    [SerializeField] private TutorialEntry FirstParticlesPicked; 
 
+    private bool firstTimeGettingParticles = true;
 
 
     void Awake()
@@ -37,6 +39,15 @@ public class PlayerParticles : MonoBehaviour
 
     public void Add(int amount) //No implementa encara
     {
+        if (firstTimeGettingParticles)
+        {
+            firstTimeGettingParticles = false;
+            TutorialManager.Instance?.TriggerIfNew("hasGetParticles", () =>
+            {
+                DroneSpeaker.Instance?.Speak(FirstParticlesPicked);
+            });
+        }
+
         numberOfParticles = Mathf.Min(numberOfParticles + amount, maxParticles);
         OnParticlesChanged();
     }

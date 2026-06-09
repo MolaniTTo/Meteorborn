@@ -285,6 +285,7 @@ public class MinionAI : MonoBehaviour
         agent.enabled = true;
         isFlying = false;
         OnLanded();
+
     }
 
     private void OnLanded()

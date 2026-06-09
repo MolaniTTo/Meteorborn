@@ -61,6 +61,8 @@ public class CameraSwitcher : MonoBehaviour
     //Input
     private InputSystem_Actions inputActions;
 
+    public bool droneMoveBlocked = false;
+
     //States
     private enum TransitionState 
     { 
@@ -335,6 +337,8 @@ public class CameraSwitcher : MonoBehaviour
 
     private void HandleDroneMovement()
     {
+        if (droneMoveBlocked) return;
+
         Vector2 move = playerStateMachine.canMove ? inputActions.Player.DroneMove.ReadValue<Vector2>() : Vector2.zero;
         Vector2 look = playerStateMachine.canMove ? inputActions.Player.DroneLook.ReadValue<Vector2>() : Vector2.zero;
 

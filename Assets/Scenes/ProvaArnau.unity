@@ -2523,7 +2523,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cursorScreenSpeed: 800
-  navMeshSampleRadius: 0.1
+  navMeshSampleRadius: 0.5
   geometryMask:
     serializedVersion: 2
     m_Bits: 64
@@ -4648,15 +4648,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c17586adf6c812149921b7ead9c1aa9d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 67.82895
+      value: -0.09446716
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c17586adf6c812149921b7ead9c1aa9d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.37
+      value: 0.038
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c17586adf6c812149921b7ead9c1aa9d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 52.84
+      value: -6.97715
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c17586adf6c812149921b7ead9c1aa9d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6464,8 +6464,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 606544784}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.15212344, y: 3.437847e-11, z: -5.2913546e-12, w: 0.98836154}
-  m_LocalPosition: {x: 60.248123, y: 1.6966944, z: 56.756897}
+  m_LocalRotation: {x: 0.15212338, y: 0.0000000112906235, z: -0.0000000017377932, w: 0.98836154}
+  m_LocalPosition: {x: -7.675292, y: -1.6353054, z: -3.060255}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8233,6 +8233,8 @@ MonoBehaviour:
   launchArcHeight: 3
   launchDuration: 1.02
   player: {fileID: 2416464619303331492}
+  tutorialFirstMinionActitaved: {fileID: 11400000, guid: 08a2f4908d0fb1245bf7ce8d194a192c, type: 2}
+  tutorialFirstMinionThrowed: {fileID: 11400000, guid: baa61a3e4031c3d4796accbf50c0670a, type: 2}
   allMinions: []
   activeMinions: []
 --- !u!4 &889119304
@@ -9263,8 +9265,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 952478882}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.15212344, y: 3.461499e-11, z: -6.8280472e-12, w: 0.98836154}
-  m_LocalPosition: {x: 60.248123, y: 1.6966944, z: 56.756897}
+  m_LocalRotation: {x: 0.15212338, y: 0.000000011406786, z: -0.000000002492508, w: 0.98836154}
+  m_LocalPosition: {x: -7.675292, y: -1.6353054, z: -3.060255}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9716,6 +9718,7 @@ MonoBehaviour:
   droneFlattenZOffset: 55
   droneGameObject: {fileID: 1748883566}
   droneHUD: {fileID: 1100959762}
+  droneMoveBlocked: 0
   isOrthoMode: 0
 --- !u!4 &1017677487
 Transform:
@@ -10634,25 +10637,12 @@ MonoBehaviour:
   introEntry: {fileID: 11400000, guid: 37cf526e24f0a0b49a4b1330e4a70568, type: 2}
   moveEntry: {fileID: 11400000, guid: 180d41ea9dbe1c44fbe58c5183a15424, type: 2}
   droneEntry: {fileID: 11400000, guid: d47742e0f494a5a4184b999930379abb, type: 2}
-  droneMoveLines:
-  - "\xBFNo recuerdas c\xF3mo funcionaba?"
-  - No pasa nada.
-  - "Te hago un repaso r\xE1pido."
-  - Con el joystick izquierdo puedo desplazarme libremente.
-  - "Y con el joystick derecho puedo mirar en cualquier direcci\xF3n."
-  droneFOVLines:
-  - "Si pulsas B una vez, cambiar\xE9 a vista plana."
-  - Algunos dicen que ayuda a encontrar caminos ocultos.
-  orthoMoveLines:
-  - "Mientras est\xE9 en vista plana aparecer\xE1 mi cursor interactivo."
-  - Puedes moverlo con el joystick izquierdo.
-  orthoAcceptLines:
-  - "Y seleccionar una posici\xF3n para desplazarte hasta ella pulsando A."
-  orthoExitLines:
-  - "Si pulsas X volver\xE9 al modo normal del dron."
-  exitDroneLines:
-  - Y si vuelves a pulsar X...
-  - Regresaremos junto a ti.
+  droneMoveEntry: {fileID: 11400000, guid: 80a8ef972e9cd6a4e9d47a82baf874e1, type: 2}
+  droneFOVEntry: {fileID: 11400000, guid: 52d599e40b314c549852dbcae6b3014e, type: 2}
+  orthoMoveEntry: {fileID: 11400000, guid: 039424090eb9cac4eb8898bc6a61adfb, type: 2}
+  orthoAcceptEntry: {fileID: 11400000, guid: e9e90cb385969a3498b5bfd55a7fd3af, type: 2}
+  orthoExitEntry: {fileID: 11400000, guid: 20739370be64c8945ab30fd2beb1e7d4, type: 2}
+  exitDroneEntry: {fileID: 11400000, guid: 771bece657033024697160a10450bfed, type: 2}
   cursorEntry: {fileID: 11400000, guid: 85115ae4b7e5d8b4eb722c1466ad7dda, type: 2}
   cursorHoldEntry: {fileID: 11400000, guid: e56c2fcb3107cf746b58b9ef425ae0a3, type: 2}
   tutorialEndEntry: {fileID: 11400000, guid: a11f3f3d99a43914eacb6379be996703, type: 2}
@@ -22562,6 +22552,7 @@ MonoBehaviour:
   canInteract: 0
   canExitDrone: 0
   canUseCursor: 0
+  canMoveOrthoCursor: 0
 --- !u!1 &2420760240589657960
 GameObject:
   m_ObjectHideFlags: 0
@@ -23713,6 +23704,10 @@ MonoBehaviour:
   - {fileID: 1782111968}
   placeDuration: 4
   placeEase: 27
+  firstTimePlacingPiece: 1
+  firstTimePlacingTutorial: {fileID: 11400000, guid: 1f3c5979583a9e849b4cd74b95774490, type: 2}
+  lastPiecePlaced: 0
+  lastPiecePlacedTutorial: {fileID: 11400000, guid: 83ec626273c409349aab1aa9de812a33, type: 2}
 --- !u!135 &4340558291907187317
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -25082,6 +25077,7 @@ MonoBehaviour:
   numberOfParticles: 3000
   maxParticles: 300
   numberOfRedParticles: 0
+  FirstParticlesPicked: {fileID: 11400000, guid: ba951f0944be61345bf1d9696e6e95ae, type: 2}
 --- !u!114 &5695271831210173489
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25097,12 +25093,15 @@ MonoBehaviour:
   detectionRadius: 8
   detectionAngle: 60
   checkInterval: 0.5
+  occlusionMask:
+    serializedVersion: 2
+    m_Bits: 64
   tutorialFirstEnemy: {fileID: 11400000, guid: 3696636b3a5636d4d8afd001036be842, type: 2}
   tutorialFirstMinion: {fileID: 11400000, guid: bdbaf771a1ec2e043bb9076042dae0ad, type: 2}
   tutorialFirstStatue: {fileID: 11400000, guid: d1ceb6e710e967f4ab577ef317634ce9, type: 2}
+  tutorialFirstCohet: {fileID: 11400000, guid: d0f3310a29101284cb98252073ab077d, type: 2}
   infoEnemy: {fileID: 11400000, guid: 35c7b4cfc04edd94197dc3514ed78ee6, type: 2}
-  infoMinion: {fileID: 0}
-  infoBoth: {fileID: 0}
+  infoMinion: {fileID: 11400000, guid: 1c4bdc9a89bd67940a2d56485776c8ed, type: 2}
   infoStatue: {fileID: 11400000, guid: 399f1cb85d66a3f45a825cc1b4941e30, type: 2}
   tutorialActive: 0
 --- !u!1 &5701204559595732882

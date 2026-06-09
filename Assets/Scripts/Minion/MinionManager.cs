@@ -30,6 +30,11 @@ public class MinionManager : MonoBehaviour
 
     private float pendingLaunchTimer = 0f;
     private const float maxPendingTime = 5f;
+    private bool firstTimeActivating = true; // Per disparar el tutorial la primera vegada que s'activa un minion, encara no implementat
+    [SerializeField] private TutorialEntry tutorialFirstMinionActitaved; // Missatge que es diu la primera vegada que s'activa un minion, encara no implementat
+    private bool firstTimeThrowing = true; 
+    [SerializeField] private TutorialEntry tutorialFirstMinionThrowed;
+
 
     // ── Llistes internes ──────────────────────────────────────────────────────
     [SerializeField] private List<MinionAI> allMinions = new List<MinionAI>();
@@ -235,6 +240,14 @@ public class MinionManager : MonoBehaviour
         pendingLaunch.LaunchTo(pendingLaunchTarget, launchArcHeight, launchDuration);
         pendingLaunch = null;
         pendingLaunchTimer = 0f;
+        if (firstTimeThrowing)
+        {
+            firstTimeThrowing = false;
+            TutorialManager.Instance?.TriggerIfNew("hasThrownMinion", () =>
+            {
+                DroneSpeaker.Instance?.Speak(tutorialFirstMinionThrowed);
+            });
+        }
     }
 
     // ────────────────────────────────────────────────────────────────────────
@@ -298,6 +311,14 @@ public class MinionManager : MonoBehaviour
         {
             pendingMinion.Activate();
             RegisterActive(pendingMinion);
+            if(firstTimeActivating)
+            {
+                firstTimeActivating = false;
+                TutorialManager.Instance?.TriggerIfNew("hasSeenStatue", () =>
+                {
+                    DroneSpeaker.Instance?.Speak(tutorialFirstMinionActitaved);
+                });
+            }
         }
 
         ClearPending();
