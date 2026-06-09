@@ -12,4 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaf922bebb4f0ba47bbe300c733f44ba, type: 3}
   m_Name: First_ParticlePicked
   m_EditorClassIdentifier: 
-  lines: []
+  lines:
+  - "\xA1Espera!"
+  - "\xBFHas visto eso?"
+  - "Acabas de recoger una de esas part\xEDculas luminosas."
+  - "No s\xE9 qui\xE9n las cre\xF3 ni por qu\xE9 est\xE1n aqu\xED."
+  - "Pero tengo la sensaci\xF3n de que nos ser\xE1n \xFAtiles."
+  inputUnlocksAtLine: -1

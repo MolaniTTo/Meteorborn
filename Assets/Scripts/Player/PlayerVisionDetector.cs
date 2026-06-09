@@ -8,16 +8,17 @@ public class PlayerVisionDetector : MonoBehaviour
     [SerializeField] private float detectionRadius = 8f;
     [SerializeField] private float detectionAngle = 60f;
     [SerializeField] private float checkInterval = 0.5f;
+    [SerializeField] private LayerMask occlusionMask;
 
     [Header("Tutorials — primera vegada")]
-    [SerializeField] private TutorialEntry tutorialFirstEnemy;
+    [SerializeField] private TutorialEntry tutorialFirstEnemy; 
     [SerializeField] private TutorialEntry tutorialFirstMinion;
     [SerializeField] private TutorialEntry tutorialFirstStatue;
+    [SerializeField] private TutorialEntry tutorialFirstCohet;
 
     [Header("Tutorials — informatiu (botó ajuda)")]
     [SerializeField] private TutorialEntry infoEnemy;
     [SerializeField] private TutorialEntry infoMinion;
-    [SerializeField] private TutorialEntry infoBoth;
     [SerializeField] private TutorialEntry infoStatue;
 
     // Input
@@ -25,6 +26,8 @@ public class PlayerVisionDetector : MonoBehaviour
 
     // Referència al player per saber el mode
     private PlayerStateMachine playerStateMachine;
+
+    public bool tutorialActive = false;
 
     void Awake()
     {
@@ -53,8 +56,8 @@ public class PlayerVisionDetector : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(checkInterval);
         while (true)
         {
-            // Només en ThirdPerson
-            if (playerStateMachine.CurrentViewMode == PlayerStateMachine.PlayerViewMode.ThirdPerson)
+            if (!tutorialActive &&
+                playerStateMachine.CurrentViewMode == PlayerStateMachine.PlayerViewMode.ThirdPerson)
                 CheckVision();
             yield return wait;
         }
@@ -65,6 +68,7 @@ public class PlayerVisionDetector : MonoBehaviour
         bool seesEnemy = SeesObjectOfType<EnemicAI>();
         bool seesMinion = SeesObjectOfType<MinionAI>();
         bool seesStatue = SeesObjectOfType<StatueSavePoint>();
+        bool seesCohet = SeesObjectOfType<CarryObject>();
 
         if (seesEnemy)
         {
@@ -83,21 +87,29 @@ public class PlayerVisionDetector : MonoBehaviour
             TutorialManager.Instance?.TriggerIfNew("hasSeenStatue", () =>
                 DroneSpeaker.Instance?.Speak(tutorialFirstStatue));
         }
+        if (seesCohet)
+        {
+            TutorialManager.Instance?.TriggerIfNew("hasSeenCohet", () =>
+                DroneSpeaker.Instance?.Speak(tutorialFirstCohet));
+        }
     }
 
     // ── Botó d'ajuda ──────────────────────────────────────────────────────────
 
     private void OnHelpPressed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
+        if (tutorialActive) return;
         if (DroneSpeaker.Instance != null && DroneSpeaker.Instance.IsSpeaking) return;
 
         bool seesEnemy = SeesObjectOfType<EnemicAI>();
         bool seesMinion = SeesObjectOfType<MinionAI>();
+        bool seesStatue = SeesObjectOfType<StatueSavePoint>();
+        bool seesCohet = SeesObjectOfType<CarryObject>();
 
-        if (seesEnemy && seesMinion) { DroneSpeaker.Instance?.Speak(infoBoth); }
-        else if (seesEnemy) { DroneSpeaker.Instance?.Speak(infoEnemy); }
+        if (seesEnemy) { DroneSpeaker.Instance?.Speak(infoEnemy); }
         else if (seesMinion) { DroneSpeaker.Instance?.Speak(infoMinion); }
-        else if (SeesObjectOfType<StatueSavePoint>()) { DroneSpeaker.Instance?.Speak(infoStatue); }
+        else if (seesStatue) { DroneSpeaker.Instance?.Speak(infoStatue); }
+
     }
 
     // ── Utilitat ──────────────────────────────────────────────────────────────
@@ -112,8 +124,14 @@ public class PlayerVisionDetector : MonoBehaviour
 
             Vector3 dir = (col.transform.position - transform.position).normalized;
             float angle = Vector3.Angle(transform.forward, dir);
-            if (angle < detectionAngle)
-                return true;
+            if (angle >= detectionAngle) continue;
+
+            // Comprovació de línia de visió — si hi ha obstacle entre el player i l'objecte, ignora'l
+            float distance = Vector3.Distance(transform.position, col.transform.position);
+            if (Physics.Raycast(transform.position, dir, out RaycastHit hit, distance, occlusionMask))
+                continue; // hi ha alguna cosa al mig
+
+            return true;
         }
         return false;
     }

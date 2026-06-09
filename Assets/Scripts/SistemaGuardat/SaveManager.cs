@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class SaveManager : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class SaveManager : MonoBehaviour
     private string GetSavePath(int slot) => Path.Combine(Application.persistentDataPath, $"save_slot{slot}.json"); // ruta per a cada slot de guardat
 
     private SaveData currentData = new SaveData(); // mantenim una instància actual de les dades per facilitar la recollida i aplicació
+    private List<MinionSaveData> pendingMinionData = null;
 
     void Awake()
     {
@@ -45,9 +47,12 @@ public class SaveManager : MonoBehaviour
         currentData = JsonUtility.FromJson<SaveData>(json); //parseja el JSON per obtenir les dades de la partida guardada
 
         ApplyPlayerData(currentData.player); 
-        ApplyMinionsData(currentData.minions);
+        pendingMinionData = currentData.minions; 
         ApplyWorldData(currentData.world);
-        TutorialManager.Instance?.LoadSaveData(currentData.tutorial);
+        if (TutorialManager.Instance != null)
+            TutorialManager.Instance.LoadSaveData(currentData.tutorial);
+        else
+            pendingTutorialData = currentData.tutorial; 
 
         Debug.Log("[SaveManager] Partida carregada.");
         return true;
@@ -61,8 +66,14 @@ public class SaveManager : MonoBehaviour
         string path = GetSavePath(slot);
         if (File.Exists(path)) File.Delete(path);
         Debug.Log($"[SaveManager] Slot {slot} eliminat.");
-
     }
+
+    public void NewGame()
+    {
+        currentData = new SaveData();
+        pendingMinionData = null;
+    }
+
     public SlotPreviewData GetSlotPreview(int slot)
     {
         string path = GetSavePath(slot);
@@ -78,7 +89,7 @@ public class SaveManager : MonoBehaviour
                 slot = slot,
                 lastSaved = info.LastWriteTime.ToString("dd/MM/yyyy  HH:mm"),
                 particles = data.player.particles,
-                tutorialDone = data.tutorial.hasUsedParticles // pots canviar per qualsevol indicador de progrés
+                tutorialDone = data.tutorial.tutorialCompleted
             };
         }
         catch
@@ -107,6 +118,7 @@ public class SaveManager : MonoBehaviour
         var list = new List<MinionSaveData>();
         foreach (MinionAI minion in FindObjectsByType<MinionAI>(FindObjectsSortMode.None))
         {
+            Debug.Log($"[SaveManager] Recollint dades del minion a posició ({minion.transform.position.x}, {minion.transform.position.y}, {minion.transform.position.z}) amb estat {minion.currentState}.");
             UniqueID spawnerID = minion.spawner?.GetComponent<UniqueID>();
             list.Add(new MinionSaveData
             {
@@ -115,6 +127,10 @@ public class SaveManager : MonoBehaviour
                 posX = minion.transform.position.x,
                 posY = minion.transform.position.y,
                 posZ = minion.transform.position.z,
+                scaleX = minion.transform.localScale.x,
+                scaleY = minion.transform.localScale.y,
+                scaleZ = minion.transform.localScale.z,
+                health = minion.healthComponent.currentHealth
             });
         }
         return list;
@@ -131,39 +147,53 @@ public class SaveManager : MonoBehaviour
     {
         PlayerStateMachine player = FindFirstObjectByType<PlayerStateMachine>();
         if (player == null) return;
+
+        NavMeshAgent agent = player.GetComponent<NavMeshAgent>();
+
+        if (agent != null) agent.enabled = false;
+
         player.transform.position = new Vector3(data.posX, data.posY, data.posZ);
-        player.playerParticles.numberOfParticles = data.particles;
+
+        if (agent != null) agent.enabled = true;
     }
 
-    private void ApplyMinionsData(List<MinionSaveData> list)
+    public void ApplyMinionData(MinionSpawner spawner)
     {
-        foreach (MinionSaveData data in list)
+        if (pendingMinionData == null) return;
+
+        UniqueID uid = spawner.GetComponent<UniqueID>();
+        if (uid == null) return;
+
+        foreach (MinionSaveData data in pendingMinionData)
         {
-            // Troba el spawner amb aquest ID
-            foreach (UniqueID uid in FindObjectsByType<UniqueID>(FindObjectsSortMode.None))
+            if (data.spawnerID != uid.ID) continue;
+
+            MinionAI minion = spawner.spawnedMinion;
+            if (minion == null) return;
+
+            if (minion.agent != null) minion.agent.enabled = false;
+            minion.transform.position = new Vector3(data.posX, data.posY, data.posZ);
+            if (minion.agent != null) minion.agent.enabled = true;
+            minion.transform.localScale = new Vector3(data.scaleX, data.scaleY, data.scaleZ);
+            if (minion.healthComponent != null)
+                minion.healthComponent.currentHealth = data.health;
+
+            if (System.Enum.TryParse(data.state, out MinionAI.MinionState state))
             {
-                if (uid.ID != data.spawnerID) continue;
-
-                MinionSpawner spawner = uid.GetComponent<MinionSpawner>();
-                if (spawner == null || spawner.spawnedMinion == null) continue;
-
-                MinionAI minion = spawner.spawnedMinion;
-
-                // Aplica posició
-                minion.transform.position = new Vector3(data.posX, data.posY, data.posZ);
-
-                // Aplica estat
-                if (System.Enum.TryParse(data.state, out MinionAI.MinionState state))
+                if (state == MinionAI.MinionState.Activat)
                 {
-                    if (state == MinionAI.MinionState.Activat)
-                        minion.Activate();
-                    else if (state == MinionAI.MinionState.Debilitat)
-                        minion.ChangeState(MinionAI.MinionState.Debilitat);
-                    else
-                        minion.ChangeState(MinionAI.MinionState.Desactivat);
+                    minion.Activate();
+                    MinionManager.Instance.RegisterActive(minion);
                 }
-                break;
+                    
+                else if (state == MinionAI.MinionState.Debilitat)
+                    minion.ChangeState(MinionAI.MinionState.Debilitat);
+                else
+                    minion.ChangeState(MinionAI.MinionState.Desactivat);
             }
+
+            Debug.Log($"[SaveManager] Dades aplicades al minion del spawner {uid.ID}.");
+            return;
         }
     }
 
@@ -172,6 +202,17 @@ public class SaveManager : MonoBehaviour
         WorldManager.Instance?.LoadSaveData(data);
         WorldManager.Instance?.ApplyToWorld();
     }
+
+    private TutorialSaveData pendingTutorialData = null;
+
+    public TutorialSaveData ConsumePendingTutorialData()
+    {
+        var data = pendingTutorialData;
+        pendingTutorialData = null;
+        return data;
+    }
+
+    public bool HasPendingTutorialData() => pendingTutorialData != null;
 }
 
 [System.Serializable]

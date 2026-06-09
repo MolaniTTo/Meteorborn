@@ -15,6 +15,7 @@ public class DroneSpeaker : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private float textSpeed = 0.03f;
+    private bool isFirstLine = true;
 
     // Input
     private InputSystem_Actions inputActions;
@@ -25,6 +26,15 @@ public class DroneSpeaker : MonoBehaviour
     private bool isTyping = false;
     private bool isSpeaking = false;
 
+    public bool IsTyping => isTyping;
+    public int CurrentLineIndex { get; private set; } = 0;
+
+
+    public void ForceClose()
+    {
+        if (typingCoroutine != null) StopCoroutine(typingCoroutine);
+        Close();
+    }
     void Awake()
     {
         if (Instance != null) { Destroy(gameObject); return; }
@@ -61,6 +71,8 @@ public class DroneSpeaker : MonoBehaviour
     public void Speak(string[] lines)
     {
         lineQueue.Clear();
+        CurrentLineIndex = 0;
+        isFirstLine = true;
         foreach (string line in lines)
             lineQueue.Enqueue(line);
 
@@ -68,6 +80,7 @@ public class DroneSpeaker : MonoBehaviour
         canvas.enabled = true;
         ShowNextLine();
     }
+
 
     public bool IsSpeaking => isSpeaking;
 
@@ -98,11 +111,10 @@ public class DroneSpeaker : MonoBehaviour
 
     private void ShowNextLine()
     {
-        if (lineQueue.Count == 0)
-        {
-            Close();
-            return;
-        }
+        if (lineQueue.Count == 0) { Close(); return; }
+
+        if (!isFirstLine) CurrentLineIndex++;
+        isFirstLine = false;
 
         currentLine = lineQueue.Dequeue();
         if (typingCoroutine != null) StopCoroutine(typingCoroutine);

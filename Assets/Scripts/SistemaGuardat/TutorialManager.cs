@@ -13,6 +13,13 @@ public class TutorialManager : MonoBehaviour
         if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+
+        if (SaveManager.Instance != null && SaveManager.Instance.HasPendingTutorialData())
+        {
+            data = SaveManager.Instance.ConsumePendingTutorialData();
+            Debug.Log("[TutorialManager] Dades de tutorial recuperades del SaveManager.");
+        }
     }
 
     // Crida això des de qualsevol sistema: TutorialManager.Instance.TriggerIfNew("hasSeenEnemy", MostraPanel);
@@ -27,17 +34,28 @@ public class TutorialManager : MonoBehaviour
     public TutorialSaveData GetSaveData() => data;
     public void LoadSaveData(TutorialSaveData loaded) => data = loaded;
 
+    public bool IsTutorialCompleted() => data.tutorialCompleted;
+
+    public void CompleteTutorial()
+    {
+        if (data.tutorialCompleted) return;
+        data.tutorialCompleted = true;
+        SaveManager.Instance?.Save();
+    }
+
     private bool GetFlag(string flag)
     {
         return flag switch
         {
             "hasSeenEnemy" => data.hasSeenEnemy,
             "hasSeenMinion" => data.hasSeenMinion,
-            "hasUsedOrthographic" => data.hasUsedOrthographic,
             "hasGetParticles" => data.hasGetParticles,
-            "hasUsedParticles" => data.hasUsedParticles,
-            "hasGetRedParticles" => data.hasGetRedParticles,
             "hasSeenStatue" => data.hasSeenStatue,
+            "hasActivatedMinion" => data.hasActivatedMinion,
+            "hasThrownMinion" => data.hasThrownMinion,
+            "hasPlacedPiece" => data.hasPlacedPiece,
+            "hasPlacedAllPieces" => data.hasPlacedAllPieces,
+
 
             _ => false
         };
@@ -49,11 +67,12 @@ public class TutorialManager : MonoBehaviour
         {
             case "hasSeenEnemy": data.hasSeenEnemy = value; break;
             case "hasSeenMinion": data.hasSeenMinion = value; break;
-            case "hasUsedOrthographic": data.hasUsedOrthographic = value; break;
             case "hasGetParticles": data.hasGetParticles = value; break;
-            case "hasUsedParticles": data.hasUsedParticles = value; break;
-            case "hasGetRedParticles": data.hasGetRedParticles = value; break;
             case "hasSeenStatue": data.hasSeenStatue = value; break;
+            case "hasActivatedMinion" : data.hasActivatedMinion = value; break;
+            case "hasThrownMinion" : data.hasThrownMinion = value; break;
+            case "hasPlacedPiece" : data.hasPlacedPiece = value; break;
+            case "hasPlacedAllPieces" : data.hasPlacedAllPieces = value; break;
         }
     }
 }

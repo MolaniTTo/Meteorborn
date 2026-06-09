@@ -20,7 +20,6 @@ public class MinionScaleController : MonoBehaviour
         health = GetComponent<HealthComponent>();
 
         if(health != null) { health.OnDamageTaken += _ => UpdateScale(health.HealthPercent); }
-        SetMinScale();
     }
 
     private void OnDestroy()

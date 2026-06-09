@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aaf922bebb4f0ba47bbe300c733f44ba, type: 3}
+  m_Name: Final_Tutorial
+  m_EditorClassIdentifier: 
+  lines:
+  - Y creo que eso es todo lo importante.
+  - "Ya tienes todo lo necesario para empezar la misi\xF3n."
+  - Nuestro cohete no se va a reconstruir solo.
+  - "Sal ah\xED fuera y recupera todas las piezas que encuentres."
+  - Y oye..
+  - "Si en alg\xFAn momento olvidas c\xF3mo hacer algo..."
+  - "No te quedes mirando una roca esperando una revelaci\xF3n."
+  - "Puedes consultar el men\xFA de controles cuando quieras."
+  - Ahora vamos.
+  - Tenemos un cohete que arreglar.
+  inputUnlocksAtLine: 0

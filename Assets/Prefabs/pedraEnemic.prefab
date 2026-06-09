@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4697874842298370002}
   - component: {fileID: 6839185400124513759}
   - component: {fileID: 1708299646560866953}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Particle System
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4845,7 +4845,7 @@ GameObject:
   - component: {fileID: 4341532912685620688}
   - component: {fileID: 2818320432814677609}
   - component: {fileID: 6345592396342637029}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Point Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4965,15 +4965,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: ec474a77458d86e4694709a8826f36c2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 176.49
+      value: 2.21
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ec474a77458d86e4694709a8826f36c2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.38
+      value: 3.9333029
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ec474a77458d86e4694709a8826f36c2, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 154.20415
+      value: 1.96
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ec474a77458d86e4694709a8826f36c2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4985,7 +4985,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ec474a77458d86e4694709a8826f36c2, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ec474a77458d86e4694709a8826f36c2, type: 3}
       propertyPath: m_LocalRotation.z
@@ -5007,6 +5007,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: pedraEnemic
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: ec474a77458d86e4694709a8826f36c2, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -5016,10 +5020,34 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: ec474a77458d86e4694709a8826f36c2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4341532912685620688}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ec474a77458d86e4694709a8826f36c2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5121917065770687620}
   m_SourcePrefab: {fileID: 100100000, guid: ec474a77458d86e4694709a8826f36c2, type: 3}
 --- !u!4 &5926910333467872396 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: ec474a77458d86e4694709a8826f36c2, type: 3}
   m_PrefabInstance: {fileID: 6181794080441019239}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &6416306925281056310 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: ec474a77458d86e4694709a8826f36c2, type: 3}
+  m_PrefabInstance: {fileID: 6181794080441019239}
+  m_PrefabAsset: {fileID: 0}
+--- !u!208 &5121917065770687620
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6416306925281056310}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 0
+  m_Extents: {x: 0.813, y: 0.89300007, z: 0.813}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 0
+  m_Center: {x: 0.030000001, y: 0.293, z: 0.15400001}
+  m_TimeToStationary: 0.5

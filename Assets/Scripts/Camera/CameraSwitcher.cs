@@ -61,6 +61,8 @@ public class CameraSwitcher : MonoBehaviour
     //Input
     private InputSystem_Actions inputActions;
 
+    public bool droneMoveBlocked = false;
+
     //States
     private enum TransitionState 
     { 
@@ -133,16 +135,25 @@ public class CameraSwitcher : MonoBehaviour
 
     private void OnDroneFlattenPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
-        if (DroneSpeaker.Instance != null && DroneSpeaker.Instance.IsSpeaking) return;
+        if (!playerStateMachine.canUseDrone) return;
+
+        bool speakerBlocks = DroneSpeaker.Instance != null
+            && DroneSpeaker.Instance.IsSpeaking
+            && (TutorialInicial.Instance == null || !playerStateMachine.canUseDrone);
+        if (speakerBlocks) return;
 
         switch (transitionState)
         {
             case TransitionState.Idle:
-                // Tercera persona → dron
-                if (!isOrthoMode) StartSwitchToDrone();
+                if (!isOrthoMode)
+                {
+                    if (!playerStateMachine.canUseDrone) return; 
+                    StartSwitchToDrone();
+                }
                 break;
 
             case TransitionState.DroneActive:
+                if (!playerStateMachine.canUseOrtho) return;
                 if (droneHUD != null)
                     droneHUD.PlayPhotoFlash(() => StartSwitchToOrthoFromDrone());
                 else
@@ -156,13 +167,17 @@ public class CameraSwitcher : MonoBehaviour
         switch (transitionState)
         {
             case TransitionState.DroneActive:
+                if (!playerStateMachine.canExitDrone) return;
                 StartExitDrone();
                 HandleDroneMovement();
                 break;
 
             case TransitionState.Idle:
-                // Ortogràfic → torna al dron volant
-                if (isOrthoMode) StartReturnToDrone();
+                if (isOrthoMode)
+                {
+                    if (!playerStateMachine.canExitDrone) return;
+                    StartReturnToDrone();
+                }
                 break;
         }
     }
@@ -227,6 +242,7 @@ public class CameraSwitcher : MonoBehaviour
 
     private void StartSwitchToOrthoFromDrone()
     {
+        if (!playerStateMachine.canUseOrtho) return;
         //if (droneHUD != null) droneHUD.Hide();
 
         // Determinem la rotació final — snappejada si hi ha snap, la del dron si no
@@ -321,25 +337,40 @@ public class CameraSwitcher : MonoBehaviour
 
     private void HandleDroneMovement()
     {
-        Vector2 move = inputActions.Player.DroneMove.ReadValue<Vector2>();
-        Vector2 look = inputActions.Player.DroneLook.ReadValue<Vector2>();
+        if (droneMoveBlocked) return;
+
+        Vector2 move = playerStateMachine.canMove ? inputActions.Player.DroneMove.ReadValue<Vector2>() : Vector2.zero;
+        Vector2 look = playerStateMachine.canMove ? inputActions.Player.DroneLook.ReadValue<Vector2>() : Vector2.zero;
 
         // Rotem el dron sencer (no la cam)
         float yaw = droneMovement.transform.eulerAngles.y + look.x * droneRotateSpeed * Time.deltaTime;
         dronePitch -= look.y * droneRotateSpeed * Time.deltaTime;
         dronePitch = Mathf.Clamp(dronePitch, -80f, 80f);
-        droneMovement.transform.rotation = Quaternion.Euler(0f, yaw, 0f); // el cos del dron només gira en Y
-        droneCameraPosition.transform.localRotation = Quaternion.Euler(dronePitch, 0f, 0f); // el pitch només a la cam
+        droneMovement.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+        droneCameraPosition.transform.localRotation = Quaternion.Euler(dronePitch, 0f, 0f);
 
         // Moviment basat en la direcció de la càmera
         Transform camT = droneCameraPosition.transform;
         Vector3 moveDir = camT.forward * move.y + camT.right * move.x;
-        Vector3 newPos = droneMovement.transform.position + moveDir * droneMoveSpeed * Time.deltaTime;
-        newPos.y = Mathf.Clamp(newPos.y, droneMinHeight, droneMaxHeight);
-        droneMovement.transform.position = newPos;
 
-        // La droneCam segueix el droneCameraPosition automàticament si la hi assignes com a Follow
-        // O la sincronitzem manualment:
+        // ── Col·lisió per eixos separats ──────────────────────────────────────
+        Vector3 currentPos = droneMovement.transform.position;
+        float sphereRadius = 0.1f;
+
+        Vector3 horizontalMove = new Vector3(moveDir.x, 0f, moveDir.z) * droneMoveSpeed * Time.deltaTime;
+        if (horizontalMove.sqrMagnitude > 0.001f)
+            if (!Physics.SphereCast(currentPos, sphereRadius, horizontalMove.normalized, out _, horizontalMove.magnitude))
+                currentPos += horizontalMove;
+
+        Vector3 verticalMove = new Vector3(0f, moveDir.y, 0f) * droneMoveSpeed * Time.deltaTime;
+        if (verticalMove.sqrMagnitude > 0.001f)
+            if (!Physics.SphereCast(currentPos, sphereRadius, verticalMove.normalized, out _, verticalMove.magnitude))
+                currentPos += verticalMove;
+
+        currentPos.y = Mathf.Clamp(currentPos.y, droneMinHeight, droneMaxHeight);
+        droneMovement.transform.position = currentPos;
+        // ─────────────────────────────────────────────────────────────────────
+
         droneCam.transform.SetPositionAndRotation(
             droneCameraPosition.transform.position,
             droneCameraPosition.transform.rotation

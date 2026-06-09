@@ -8,7 +8,7 @@ public class HealthComponent : MonoBehaviour
     [SerializeField] private bool targetableByEnemy = false;
     [SerializeField] private bool targetableByMinion = false;
 
-    [SerializeField] public float currentHealth { get; private set; }
+    [SerializeField] public float currentHealth;
 
     public Action<float> OnDamageTaken;
     public Action OnDeath;
@@ -16,6 +16,8 @@ public class HealthComponent : MonoBehaviour
     public bool IsTargetableByEnemy => targetableByEnemy;
     public bool IsTargetableByMinion => targetableByMinion;
     public float HealthPercent => currentHealth / maxHealth;
+    public void SetTargetableByEnemy(bool value) => targetableByEnemy = value;
+
 
     private bool isDead = false;
 

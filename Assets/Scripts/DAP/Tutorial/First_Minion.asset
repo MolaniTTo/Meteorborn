@@ -13,5 +13,11 @@ MonoBehaviour:
   m_Name: First_Minion
   m_EditorClassIdentifier: 
   lines:
-  - Menudo enano
-  - Mis sistemas creen que es bueno
+  - Espera un momento...
+  - "Mis sensores detectan se\xF1ales de vida."
+  - "Esa peque\xF1a criatura est\xE1 viva."
+  - "Y dir\xEDa que tiene problemas."
+  - "Quiz\xE1 deber\xEDamos acercarnos."
+  - "\xBFQuieres saber m\xE1s? Pulsa la cruceta abajo mirando al objetivo y te contar\xE9
+    lo que s\xE9."
+  inputUnlocksAtLine: -1

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aaf922bebb4f0ba47bbe300c733f44ba, type: 3}
+  m_Name: First_CohetPlaced
+  m_EditorClassIdentifier: 
+  lines:
+  - "\xA1S\xED!"
+  - "\xA1Lo has conseguido!"
+  - Esa es la primera pieza que recuperamos.
+  - "Por fin algo est\xE1 saliendo seg\xFAn el plan."
+  - Bueno...
+  - "Seg\xFAn el plan original no estaba previsto estrellarse en una isla."
+  - Pero ya me entiendes.
+  - "Cada pieza que coloquemos nos acerca un poco m\xE1s a volver a casa."
+  - "Todav\xEDa queda mucho trabajo por delante."
+  - "As\xED que no te duermas sobre tus propias piedras."
+  - "Vamos a encontrar las dem\xE1s."
+  inputUnlocksAtLine: -1

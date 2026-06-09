@@ -57,12 +57,12 @@ public class StatueSavePoint : MonoBehaviour
         if (found && !playerInRange)
         {
             playerInRange = true;
-            OnPlayerEnter();
+            //OnPlayerEnter();
         }
         else if (!found && playerInRange)
         {
             playerInRange = false;
-            OnPlayerExit();
+            //OnPlayerExit();
         }
     }
 

@@ -1,75 +1,75 @@
+using DG.Tweening;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine.AI;
 
-
-/*
-Aquest script coloca les peçes de la nau / meteorit al lloc on toquen de manera suau.
-*/
 public class MeteoritColocar : MonoBehaviour
 {
-    [Tooltip("Pocicions objectiu")]
-    [SerializeField] Transform[] posicions; //Pocicions objectiu
+    [Tooltip("Posicions objectiu")]
+    [SerializeField] Transform[] posicions;
     [Tooltip("Objectes que s'han de posicionar")]
-    [SerializeField] Transform[] objectes; //Objectes que s'han de posicionar
-    [Tooltip("Objectes que han sigut posicionats")]
-    [SerializeField] bool[] posicionats; //Objectes que han sigut posicionats
-    private bool enMoviment = false;
+    [SerializeField] Transform[] objectes;
+    [Tooltip("Duració de l'animació de col·locació")]
+    [SerializeField] float placeDuration = 1f;
+    [SerializeField] Ease placeEase = Ease.OutBack;
+    [SerializeField] private bool firstTimePlacingPiece = true;
+    [SerializeField] private TutorialEntry firstTimePlacingTutorial;
+    [SerializeField] private bool lastPiecePlaced = false;
+    [SerializeField] private TutorialEntry lastPiecePlacedTutorial;
 
-    // Update is called once per frame
-    void Update()
+    private void OnTriggerEnter(Collider other)
     {
-        if (enMoviment)
-        {
-            Actualitzar();
-        }
-    }
+        // Detecta si és un CarryObject
+        CarryObject carry = other.GetComponent<CarryObject>();
+        if (carry == null) return;
 
-    private void Actualitzar()
-    {
-        int trues = 0;
-        int totals = 0;
-
+        // Busca quin objecte de la llista coincideix
         for (int i = 0; i < objectes.Length; i++)
         {
-            if (posicionats[i])
+            if (objectes[i] == other.transform && i < posicions.Length)
             {
-                totals += 1;
-
-                if (objectes[i].position != posicions[i].position)
-                {
-                    objectes[i].position = Vector3.MoveTowards(objectes[i].position, posicions[i].position, 1f * Time.deltaTime);
-                } else
-                {
-                    trues += 1;
-                }
-
-                objectes[i].rotation = posicions[i].rotation;
-
-                Rigidbody tempRigid = objectes[i].gameObject.GetComponent<Rigidbody>();
-
-                tempRigid.isKinematic = true;
+                ColocarPeça(carry, objectes[i], posicions[i]);
+                break;
             }
-        }
-
-        if (totals == trues)
-        {
-            enMoviment = false;
         }
     }
 
-    private void OnTriggerEnter(Collider other) {
-        if (other.CompareTag("meteorPart"))
-        {
-            for (int i = 0; i < objectes.Length; i++)
-            {
-                if (objectes[i] == other.transform)
-                {
-                    posicionats[i] = true;
-                    break;
-                }
-            }
+    private int piecesPlaced = 0;
 
-            enMoviment = true;
+    private void ColocarPeça(CarryObject carry, Transform objecte, Transform posicio)
+    {
+        if (firstTimePlacingPiece)
+        {
+            firstTimePlacingPiece = false;
+            TutorialManager.Instance?.TriggerIfNew("hasPlacedPiece", () =>
+                DroneSpeaker.Instance?.Speak(firstTimePlacingTutorial));
         }
+
+        carry.ReleaseMinions();
+        NavMeshAgent agent = objecte.GetComponent<NavMeshAgent>();
+        if (agent != null) agent.enabled = false;
+        Rigidbody rb = objecte.GetComponent<Rigidbody>();
+        if (rb != null) rb.isKinematic = true;
+
+        if (carry.carryObject != null)
+        {
+            carry.carryObject.transform.DOLocalMove(Vector3.zero, placeDuration * 0.5f).SetEase(Ease.OutSine);
+            carry.carryObject.transform.DOLocalRotate(Vector3.zero, placeDuration * 0.5f).SetEase(Ease.OutSine);
+        }
+
+        objecte.DOMove(posicio.position, placeDuration).SetEase(placeEase)
+            .OnComplete(() =>
+            {
+                carry.OnDelivered();
+                piecesPlaced++;
+                Debug.Log($"[MeteoritColocar] Peça '{objecte.name}' col·locada. ({piecesPlaced}/{objectes.Length})");
+
+                if (piecesPlaced >= objectes.Length)
+                {
+                    TutorialManager.Instance?.TriggerIfNew("hasPlacedAllPieces", () =>
+                        DroneSpeaker.Instance?.Speak(lastPiecePlacedTutorial));
+                }
+            });
+
+        objecte.DORotateQuaternion(posicio.rotation, placeDuration).SetEase(placeEase);
     }
 }

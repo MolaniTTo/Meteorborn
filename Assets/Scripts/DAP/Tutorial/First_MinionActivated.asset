@@ -12,4 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaf922bebb4f0ba47bbe300c733f44ba, type: 3}
   m_Name: First_MinionActivated
   m_EditorClassIdentifier: 
-  lines: []
+  lines:
+  - "\xA1Funciona!"
+  - "\xBFLo has visto?"
+  - Ese Makka Pakka ha reaccionado al Lumen.
+  - "Parece que necesitaba energ\xEDa para despertar."
+  - Interesante...
+  - Muy interesante.
+  - "Quiz\xE1 estos peque\xF1os amigos sean la clave para explorar la isla."
+  - "Si encuentras m\xE1s que necesiten ayuda, ya sabes qu\xE9 hacer.."
+  inputUnlocksAtLine: -1

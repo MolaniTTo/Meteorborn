@@ -28,6 +28,7 @@ public class BTCasiMort : BTNode
             if (minion.animator != null) minion.animator.SetTrigger("CasiMort");
             minion.scaleController?.StartNearDeathBreath(minion.nearDeathDuration); // comença a parpadejar i respirar lentament
             minion.visualController?.StartBlink(minion.nearDeathDuration);
+            minion.GetComponent<HealthComponent>()?.SetTargetableByEnemy(false);
         }
 
         if (minion.nearDeathExpired) return true; // ja s'ha disparat el pop, espera destrucció

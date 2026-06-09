@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: First_Tutorial
   m_EditorClassIdentifier: 
   lines: []
+  inputUnlocksAtLine: -1
