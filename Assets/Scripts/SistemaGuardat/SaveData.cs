@@ -49,10 +49,12 @@ public class TutorialSaveData
     public bool hasSeenMinion;
     public bool hasGetParticles;
     public bool hasSeenStatue;
+    public bool hasSeenCohet;
     public bool tutorialCompleted;
     public bool hasActivatedMinion;
     public bool hasThrownMinion;
     public bool hasPlacedPiece;
     public bool hasPlacedAllPieces;
+    public bool hasSeenBalanca;
 
 }

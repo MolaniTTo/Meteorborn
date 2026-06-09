@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aaf922bebb4f0ba47bbe300c733f44ba, type: 3}
+  m_Name: Info_Balanca
+  m_EditorClassIdentifier: 
+  lines:
+  - "Mecanismo dise\xF1ado para comparar pesos."
+  - Los objetos que hay cerca no parecen pesar todos lo mismo.
+  - "Algunos son m\xE1s pesados que otros, aunque a simple vista no lo parezcan."
+  - "Mis sensores indican que la balanza reacciona cuando ambos lados est\xE1n equilibrados."
+  - "Tendr\xE1s que colocar los pesos de forma inteligente."
+  - Puede que necesites combinar varios para alcanzar el equilibrio perfecto.
+  - Si una parte baja y la otra sube...
+  - "Todav\xEDa no has encontrado la soluci\xF3n."
+  - Sigue probando hasta que ambos lados queden nivelados.
+  inputUnlocksAtLine: -1

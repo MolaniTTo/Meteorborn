@@ -32,6 +32,16 @@ public class MinionCursor : MonoBehaviour
     public Transform target = default;
     [SerializeField] private Vector3 targetOffset = Vector3.zero;
 
+    // ── Puzzle Mode ───────────────────────────────────────────────────────────
+    private BalancaPuzzle activePuzzle = null;
+    private PesaInteractable heldPesa = null;
+    private PesaInteractable highlightedPesa = null;
+
+    [Header("Puzzle Balança")]
+    [SerializeField] private float pesaLiftHeight = 0.6f;       // altura que puja la pesa quan s'agafa
+    [SerializeField] private float pesaFollowSpeed = 12f;       // velocitat amb la que segueix el cursor
+    [SerializeField] private float snapJoystickThreshold = 0.2f;// llindar del joystick per fer snap
+
     // ── Estat intern ──────────────────────────────────────────────────────────
     private bool isCursorActive = false;
     private bool isCylinderActive = false;
@@ -69,8 +79,8 @@ public class MinionCursor : MonoBehaviour
     void OnEnable()
     {
         inputActions.Player.Enable();
-        rightTrigger.started += OnRightTriggerStarted;  
-        rightTrigger.canceled += OnRightTriggerReleased; 
+        rightTrigger.started += OnRightTriggerStarted;
+        rightTrigger.canceled += OnRightTriggerReleased;
     }
 
     void OnDisable()
@@ -90,7 +100,7 @@ public class MinionCursor : MonoBehaviour
 
         if (playerStateMachine != null && playerStateMachine.CurrentViewMode == PlayerStateMachine.PlayerViewMode.OrthographicView)
         {
-            if(isCursorActive) ExitCursorMode();
+            if (isCursorActive) ExitCursorMode();
             return;
         }
 
@@ -114,10 +124,15 @@ public class MinionCursor : MonoBehaviour
             UpdateLineRenderer();
             visualCylinder.transform.position = target.position;
 
+            if (activePuzzle != null)
+            {
+                UpdatePuzzleMode();
+            }
+
             if (isRTHeld)
             {
                 rtHoldTimer += Time.deltaTime;
-                if(rtHoldTimer >= rtHoldThreshold && !isCylinderActive) //si el RT ha estat mantingut prou temps i el cilindre no està actiu, l'activem
+                if (rtHoldTimer >= rtHoldThreshold && !isCylinderActive) //si el RT ha estat mantingut prou temps i el cilindre no està actiu, l'activem
                 {
                     ActivateCylinder();
                 }
@@ -195,11 +210,21 @@ public class MinionCursor : MonoBehaviour
             candidatePos += (camForward * stickInput.y + camRight * stickInput.x) * cursorMoveSpeed * Time.deltaTime;
 
         if (NavMesh.SamplePosition(candidatePos, out NavMeshHit navHit, 0.5f, NavMesh.AllAreas))
-            cursorWorldPosition = navHit.position;
+            cursorWorldPosition = navHit.position; // sempre al terra, per detecció
 
-        transform.position = Vector3.SmoothDamp(transform.position, cursorWorldPosition, ref cursorVelocity, cursorSmoothTime);
-        target.position = cursorWorldPosition + targetOffset;
-        target.up = Vector3.Lerp(target.up, Vector3.up, Time.deltaTime * 10f); 
+        // Determina on va visualment el cursor
+        Vector3 visualTarget = cursorWorldPosition;
+
+        if (activePuzzle != null)
+        {
+            PlataformaBalanca plat = activePuzzle.GetPlataformaUnderCursor(cursorWorldPosition);
+            if (plat != null)
+                visualTarget = plat.GetSurfacePosition(); // override visual, no cursorWorldPosition
+        }
+
+        transform.position = Vector3.SmoothDamp(transform.position, visualTarget, ref cursorVelocity, cursorSmoothTime);
+        target.position = visualTarget + targetOffset;
+        target.up = Vector3.Lerp(target.up, Vector3.up, Time.deltaTime * 10f);
     }
 
     // ── Línia jugador → cursor ─────────────────────────────────────────────────
@@ -210,7 +235,7 @@ public class MinionCursor : MonoBehaviour
         for (int i = 0; i < linePoints; i++)
         {
             float t = (float)i / (linePoints - 1);
-            Vector3 pos = Vector3.Lerp(playerTransform.position + Vector3.up * 0.5f, cursorWorldPosition, t);
+            Vector3 pos = Vector3.Lerp(playerTransform.position + Vector3.up * 0.5f, transform.position, t);
             pos.y += Mathf.Sin(Mathf.PI * t) * 1.5f;
             lineRenderer.SetPosition(i, pos);
         }
@@ -219,7 +244,15 @@ public class MinionCursor : MonoBehaviour
     // ── RT: press ─────────────────────────────────────────────────────────────
     private void OnRightTriggerStarted(InputAction.CallbackContext ctx)
     {
-        if(!isCursorActive) return; // només ens interessa si el cursor està actiu
+        if (!isCursorActive) return; // només ens interessa si el cursor està actiu
+
+        if (activePuzzle != null)
+        {
+            if (heldPesa == null && highlightedPesa != null)
+                AgarrarPesa(highlightedPesa);
+            return;
+        }
+
         isRTHeld = true;
         rtHoldTimer = 0f; // Reiniciem el temporitzador quan RT comença a ser mantingut
     }
@@ -228,6 +261,13 @@ public class MinionCursor : MonoBehaviour
     private void OnRightTriggerReleased(InputAction.CallbackContext ctx)
     {
         if (!isCursorActive) { isRTHeld = false; return; }
+
+        if (activePuzzle != null)
+        {
+            if (heldPesa != null)
+                SoltarPesa(returnToOrigin: false);
+            return;
+        }
 
         bool wasHold = rtHoldTimer >= rtHoldThreshold;
         isRTHeld = false;
@@ -257,4 +297,163 @@ public class MinionCursor : MonoBehaviour
 
     public Vector3 WorldPosition => cursorWorldPosition;
     public bool IsActive => isCursorActive;
+
+    public void SetPuzzleMode(BalancaPuzzle puzzle)
+    {
+        activePuzzle = puzzle;
+    }
+
+    public void ClearPuzzleMode()
+    {
+        activePuzzle = null;
+        SoltarPesa(returnToOrigin: true);
+    }
+
+    /// ── Mode puzzle: balança ──────────────────────────────────────────────────
+    private void UpdatePuzzleMode()
+    {
+        if (heldPesa == null)
+        {
+            // Usa la posició visual del cursor, no la del NavMesh
+            Vector3 detectionPos = transform.position; // ← posició visual real
+            PesaInteractable pesa = activePuzzle.GetPesaUnderCursor(detectionPos);
+
+            if (pesa != highlightedPesa)
+            {
+                highlightedPesa?.UnHighlight();
+                highlightedPesa = pesa;
+                highlightedPesa?.Highlight();
+            }
+        }
+        else
+        {
+            // La pesa segueix el cursor en XZ, a l'altura elevada
+            Vector3 targetPos = new Vector3(
+                cursorWorldPosition.x,
+                cursorWorldPosition.y + pesaLiftHeight,
+                cursorWorldPosition.z
+            );
+            heldPesa.transform.position = Vector3.Lerp(
+                heldPesa.transform.position,
+                targetPos,
+                Time.deltaTime * pesaFollowSpeed
+            );
+
+            // Llegeix el joystick esquerre per determinar el snap destí
+            Vector2 stick = lookAction.ReadValue<Vector2>();
+            Debug.Log($"[Puzzle Mode] Joystick: {stick}");
+            DetermineSnapPreview(stick, heldPesa);
+        }
+    }
+
+    private Transform _snapPreview = null; // null = cap, snapLeft/Right = destí
+
+    private void DetermineSnapPreview(Vector2 stick, PesaInteractable pesa)
+    {
+        Transform newSnap = null;
+
+        bool isOnPlataforma = pesa.State == PesaInteractable.PesaState.EnPlataforma;
+
+        if (stick.x > snapJoystickThreshold) //si el valor de x del joystick esquerre supera el umbral, se muestra el snap a la derecha
+        {
+            newSnap = activePuzzle.snapRight;
+        }
+        else if (stick.x < -snapJoystickThreshold)
+        {
+            newSnap = activePuzzle.snapLeft;
+        }
+        else if (stick.y < -snapJoystickThreshold && isOnPlataforma)
+        {
+            // Joystick avall = tornar a la posició inicial (marcat com a null = origen)
+            newSnap = null;
+        }
+
+        _snapPreview = newSnap;
+
+        // Visual feedback: highlight la plataforma destí
+        // (implementa aquí el teu sistema de highlight de plataformes si el tens)
+    }
+
+    private void AgarrarPesa(PesaInteractable pesa)
+    {
+        if (pesa == null) return;
+
+        heldPesa = pesa;
+        highlightedPesa?.UnHighlight();
+        highlightedPesa = null;
+        _snapPreview = null;
+
+        // Si estava en una plataforma, la traiem
+        if (pesa.PlataformaActual != null)
+        {
+            // El trigger OnTriggerExit de PlataformaBalanca ja actualitzarà el pes
+            // Desactivem el rigidbody per prendre el control
+        }
+
+        pesa.State = PesaInteractable.PesaState.Agarrada;
+
+        // Desactivem física mentre l'agafem
+        Rigidbody rb = pesa.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.linearVelocity = Vector3.zero;
+        }
+
+        pesa.transform.DOKill();
+        pesa.transform.DOMoveY(pesa.transform.position.y + pesaLiftHeight, 0.25f).SetEase(Ease.OutBack);
+    }
+
+    private void SoltarPesa(bool returnToOrigin = false)
+    {
+        if (heldPesa == null) return;
+
+        PesaInteractable pesa = heldPesa;
+        heldPesa = null;
+        _snapPreview = null;
+
+        Rigidbody rb = pesa.GetComponent<Rigidbody>();
+
+        if (returnToOrigin)
+        {
+            if (rb != null) rb.isKinematic = true;
+            pesa.transform.DOMove(pesa.OriginalPosition, 0.4f).SetEase(Ease.OutBack)
+                .OnComplete(() =>
+                {
+                    if (rb != null) rb.isKinematic = false;
+                    pesa.OnRemovedFromPlataforma();
+                });
+            return;
+        }
+
+        // Comprova si el cursor està sobre una plataforma
+        PlataformaBalanca plat = activePuzzle?.GetPlataformaUnderCursor(cursorWorldPosition);
+
+        if (plat != null)
+        {
+            Vector3 dest = plat.GetDropPosition();
+            if (rb != null) rb.isKinematic = true;
+            pesa.transform.DOMove(dest, 0.3f).SetEase(Ease.OutBack)
+                .OnComplete(() =>
+                {
+                    if (rb != null)
+                    {
+                        rb.isKinematic = false;
+                        rb.linearVelocity = Vector3.zero;
+                    }
+                    pesa.OnPlacedOnPlataforma(plat);
+                });
+        }
+        else
+        {
+            // Torna a origen si no hi ha plataforma sota
+            if (rb != null) rb.isKinematic = true;
+            pesa.transform.DOMove(pesa.OriginalPosition, 0.4f).SetEase(Ease.OutBack)
+                .OnComplete(() =>
+                {
+                    if (rb != null) rb.isKinematic = false;
+                    pesa.OnRemovedFromPlataforma();
+                });
+        }
+    }
 }
