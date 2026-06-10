@@ -252,6 +252,9 @@ public class EnemicAI : MonoBehaviour
     /// Retorna el minion activat més proper visible al con de visió.
     /// El raig ignora el layer del Player per evitar falsos negatius.
     /// </summary>
+    /// 
+
+    private bool enemyMusicPlaying = false;
     public HealthComponent CheckVision()
     {
         Collider[] hits = Physics.OverlapSphere(transform.position, visionRange);
@@ -269,6 +272,13 @@ public class EnemicAI : MonoBehaviour
             float dist = Vector3.Distance(transform.position, col.transform.position);
             if (dist < bestDist) { bestDist = dist; best = hc; }
         }
+        
+        if (best != null && !enemyMusicPlaying)
+        {
+            enemyMusicPlaying = true;
+            AudioManager.Instance?.PlayMusic("Enemy");
+        }
+
         return best;
     }
 
@@ -512,7 +522,9 @@ public class EnemicAI : MonoBehaviour
         targetHealth = null;
         lastScreamTarget = null;
         currentTarget = null;  
-        attackers.Clear();  
+        attackers.Clear();
+        enemyMusicPlaying = false;
+        AudioManager.Instance?.PlayMusic("Base");
     }
 
     // ── LookAround ────────────────────────────────────────────────────────────
@@ -546,6 +558,8 @@ public class EnemicAI : MonoBehaviour
         agent.enabled = false;
         ghostAgent.enabled = false;
         enabled = false;
+        enemyMusicPlaying = false;
+        AudioManager.Instance?.PlayMusic("Base");
     }
 
     // ── Gizmos ────────────────────────────────────────────────────────────────

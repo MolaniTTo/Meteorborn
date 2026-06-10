@@ -65,6 +65,11 @@ public class MinionCursor : MonoBehaviour
 
     public Vector3 PlayerThrowPosition => playerThrow.position;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip cursorActive; //quan es manté el LT + RT
+
+
     void Awake()
     {
         inputActions = new InputSystem_Actions();
@@ -163,6 +168,8 @@ public class MinionCursor : MonoBehaviour
     private void ExitCursorMode()
     {
         isCursorActive = false;
+        cursorAudioPlayed = false;
+        if (audioSource != null) audioSource.Stop();
         if (cinemachineInput != null) cinemachineInput.enabled = true;
         if (cursorVisual != null) cursorVisual.SetActive(false);
         if (targetVisual != null) targetVisual.SetActive(false);
@@ -174,7 +181,13 @@ public class MinionCursor : MonoBehaviour
     private void ActivateCylinder()
     {
         isCylinderActive = true;
-        Debug.Log("[Cursor] ActivateCylinder");
+        if (!cursorAudioPlayed && audioSource != null && cursorActive != null)
+        {
+            cursorAudioPlayed = true;
+            audioSource.clip = cursorActive;
+            audioSource.loop = false;
+            audioSource.Play();
+        }
         if (visualCylinder == null) return;
 
         visualCylinder.DOKill();
@@ -187,6 +200,8 @@ public class MinionCursor : MonoBehaviour
     private void DeactivateCylinder()
     {
         isCylinderActive = false;
+        cursorAudioPlayed = false;
+        if (audioSource != null) audioSource.Stop();
         if (visualCylinder == null) return;
 
         visualCylinder.DOKill();
@@ -260,6 +275,17 @@ public class MinionCursor : MonoBehaviour
     //── RT: release ─────────────────────────────────────────────────────────────
     private void OnRightTriggerReleased(InputAction.CallbackContext ctx)
     {
+        bool hasLockOn = LockOnSystem.Instance != null && LockOnSystem.Instance.IsLockedOn;
+
+        // Cas especial: lock-on actiu sense cursor → llança directament
+        if (!isCursorActive && hasLockOn)
+        {
+            Vector3 enemyPos = LockOnSystem.Instance.Target.position;
+            MinionManager.Instance?.LaunchMinionToCursor(enemyPos, playerThrow.position);
+            isRTHeld = false;
+            return;
+        }
+
         if (!isCursorActive) { isRTHeld = false; return; }
 
         if (activePuzzle != null)
@@ -273,14 +299,10 @@ public class MinionCursor : MonoBehaviour
         isRTHeld = false;
         rtHoldTimer = 0f;
 
-        // Sempre desactivem el cilindre al soltar, independentment de wasHold
         if (isCylinderActive) DeactivateCylinder();
 
-        // Només llancem si va ser un click ràpid (no hold)
-        // i el cilindre NO estava actiu quan es va prémer
         if (!wasHold && !isCylinderActive)
         {
-            bool hasLockOn = LockOnSystem.Instance != null && LockOnSystem.Instance.IsLockedOn;
             if (hasLockOn)
             {
                 Vector3 enemyPos = LockOnSystem.Instance.Target.position;
@@ -456,4 +478,6 @@ public class MinionCursor : MonoBehaviour
                 });
         }
     }
+    private bool cursorAudioPlayed = false;
+
 }

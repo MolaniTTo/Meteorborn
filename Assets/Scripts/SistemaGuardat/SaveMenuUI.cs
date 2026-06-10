@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class SaveMenuUI : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class SaveMenuUI : MonoBehaviour
 
     [SerializeField] private GameObject saveMenuUI;
     [SerializeField] private GameObject firstSelectedButton;
+    [SerializeField] private ScreenFade screenFade;
 
     private StatueSavePoint currentStatue;
 
@@ -49,6 +51,13 @@ public class SaveMenuUI : MonoBehaviour
     {
         SaveManager.Instance?.Save();
         Time.timeScale = 1f;
-        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+        screenFade.FadeOut();
+        StartCoroutine(LoadAfterFade("MainMenu"));
+    }
+
+    private IEnumerator LoadAfterFade(string scene)
+    {
+        yield return new WaitForSeconds(screenFade.fadeDuration);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(scene);
     }
 }
