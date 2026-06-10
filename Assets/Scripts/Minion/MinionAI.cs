@@ -68,7 +68,16 @@ public class MinionAI : MonoBehaviour
     // ── Highlight per al cursor ───────────────────────────────────────────────
     [HideInInspector] public bool isHighlighted = false;
 
-    
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip attackClip;
+    [SerializeField] private AudioClip lauchClip;
+    [SerializeField] private AudioClip walkClip;
+    [SerializeField] private AudioClip activatedClip;
+
+
+
+
 
 
 
@@ -118,8 +127,8 @@ public class MinionAI : MonoBehaviour
                     transform.rotation, targetRot, Time.deltaTime * 12f);
             }
         }
-
         rootNode?.Execute(this);
+        UpdateWalkAudio();
     }
 
     // ── API pública ──────────────────────────────────────────────────────────
@@ -136,6 +145,7 @@ public class MinionAI : MonoBehaviour
         scaleController?.SetMaxScale();
         visualController?.MaxLightAndEmission();
         ChangeState(MinionState.Activat);
+        PlayAudio(activatedClip);
     }
 
     public void AssignAttackTarget(Transform target)
@@ -263,6 +273,7 @@ public class MinionAI : MonoBehaviour
     private IEnumerator ArcFlight(Vector3 targetPos, float arcHeight, float duration)
     {
         animator.SetTrigger("Launch");
+        PlayAudio(lauchClip);
         isFlying = true;
         agent.enabled = false;
         Vector3 startPos = transform.position;
@@ -344,6 +355,32 @@ public class MinionAI : MonoBehaviour
         {
             GameObject go = Instantiate(attackPSPrefab);
             go.GetComponent<GeneradorParticulesDisparo>().Init(firePoint, target);
+            PlayAudio(attackClip);
+        }
+    }
+
+    public void PlayAudio(AudioClip clip, bool loop = false)
+    {
+        if (clip == null || audioSource == null) return;
+        audioSource.loop = loop;
+        audioSource.clip = clip;
+        audioSource.Play();
+    }
+
+    private void UpdateWalkAudio()
+    {
+        bool isWalking = agent.enabled && agent.velocity.sqrMagnitude > 0.1f &&
+                         (currentState == MinionState.Activat || currentState == MinionState.Treballant);
+
+        if (isWalking && !audioSource.isPlaying)
+        {
+            audioSource.clip = walkClip;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+        else if (!isWalking && audioSource.loop && audioSource.isPlaying)
+        {
+            audioSource.Stop();
         }
     }
 

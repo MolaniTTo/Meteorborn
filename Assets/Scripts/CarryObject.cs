@@ -25,6 +25,10 @@ public class CarryObject : MonoBehaviour
     private bool isBeingCarried = false;
     private bool isDelivered = false;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip carrySound; //es reprodueix quan l'objecte puja a la posició elevada abans de moure's
+
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -81,6 +85,8 @@ public class CarryObject : MonoBehaviour
         float floatDuration = 0.8f;
         Vector3 raisedPos = carryObject.transform.position + Vector3.up * floatHeight;
 
+        if (audioSource != null && carrySound != null)
+            audioSource.PlayOneShot(carrySound);
         bool elevated = false;
         carryObject.transform.DOMove(raisedPos, floatDuration).SetEase(Ease.OutSine).OnComplete(() => elevated = true);
         yield return new WaitUntil(() => elevated);

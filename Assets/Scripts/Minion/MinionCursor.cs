@@ -65,6 +65,11 @@ public class MinionCursor : MonoBehaviour
 
     public Vector3 PlayerThrowPosition => playerThrow.position;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip cursorActive; //quan es manté el LT + RT
+
+
     void Awake()
     {
         inputActions = new InputSystem_Actions();
@@ -138,6 +143,7 @@ public class MinionCursor : MonoBehaviour
                 }
             }
         }
+        UpdateCursorAudio();
 
     }
 
@@ -455,5 +461,22 @@ public class MinionCursor : MonoBehaviour
                     pesa.OnRemovedFromPlataforma();
                 });
         }
+    }
+    private bool cursorAudioPlayed = false;
+
+    private void UpdateCursorAudio()
+    {
+        bool shouldPlay = isCursorActive && isCylinderActive;
+
+        if (shouldPlay && !cursorAudioPlayed)
+        {
+            cursorAudioPlayed = true;
+            audioSource.clip = cursorActive;
+            audioSource.loop = false;
+            audioSource.Play();
+        }
+
+        if (!shouldPlay)
+            cursorAudioPlayed = false;
     }
 }

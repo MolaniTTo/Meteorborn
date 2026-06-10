@@ -17,6 +17,10 @@ public class MeteoritColocar : MonoBehaviour
     [SerializeField] private TutorialEntry lastPiecePlacedTutorial;
     [SerializeField] private BlueprintMeteorit blueprintMeteorit;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource droneEnterAudio;
+    [SerializeField] private AudioClip colocarPeça;
+
     private void OnTriggerEnter(Collider other)
     {
         // Detecta si és un CarryObject
@@ -57,6 +61,9 @@ public class MeteoritColocar : MonoBehaviour
             carry.carryObject.transform.DOLocalMove(Vector3.zero, placeDuration * 0.5f).SetEase(Ease.OutSine);
             carry.carryObject.transform.DOLocalRotate(Vector3.zero, placeDuration * 0.5f).SetEase(Ease.OutSine);
         }
+
+        if (droneEnterAudio != null && colocarPeça != null)
+            droneEnterAudio.PlayOneShot(colocarPeça);
 
         objecte.DOMove(posicio.position, placeDuration).SetEase(placeEase)
             .OnComplete(() =>

@@ -14,29 +14,42 @@ public class SlotSelectMenu : MonoBehaviour
     [Header("Escena")]
     [SerializeField] private string gameSceneName = "GameScene";
 
-    [Header("Input")]
-    [SerializeField] private PlayerInput playerInput;
+    [Header("Botó tornar")]
+    [SerializeField] private GameObject backButton;
+    [SerializeField] private MainMenuController mainMenuController;
+
+    [SerializeField] private float navigateCooldownTime = 0.2f;
+    [SerializeField] private float submitCooldownTime = 0.2f;
+    private float navigateCooldown = 0f;
+    private float submitCooldown = 0f;
 
     private int focusedSlot = 0;
     private MenuState state = MenuState.SelectingSlot;
 
+    private InputSystem_Actions inputActions;
     private InputAction navigateAction;
     private InputAction submitAction;
     private InputAction cancelAction;
 
     void Awake()
     {
-        var uiMap = playerInput.actions.FindActionMap("UI", throwIfNotFound: true);
-        navigateAction = uiMap.FindAction("Navigate", throwIfNotFound: true);
-        submitAction = uiMap.FindAction("Submit", throwIfNotFound: true);
-        cancelAction = uiMap.FindAction("Cancel", throwIfNotFound: true);
+        inputActions = new InputSystem_Actions();
+        navigateAction = inputActions.UI.Navigate;
+        submitAction = inputActions.UI.Submit;
+        cancelAction = inputActions.UI.Cancel;
+
+        confirmDialog.Init(navigateAction, submitAction, cancelAction);
     }
 
     void OnEnable()
     {
+        inputActions.UI.Enable();
         navigateAction.performed += OnNavigate;
         submitAction.performed += OnSubmit;
         cancelAction.performed += OnCancel;
+        navigateCooldown = navigateCooldownTime;
+        submitCooldown = submitCooldownTime;
+        state = MenuState.SelectingSlot;
         RefreshCards();
         SetFocus(0);
     }
@@ -46,23 +59,47 @@ public class SlotSelectMenu : MonoBehaviour
         navigateAction.performed -= OnNavigate;
         submitAction.performed -= OnSubmit;
         cancelAction.performed -= OnCancel;
+        inputActions.UI.Disable();
     }
 
-    // ── Input ─────────────────────────────────────────────────────────────────
+    void OnDestroy()
+    {
+        if (inputActions != null)
+        {
+            inputActions.Disable();
+            inputActions.Dispose();
+            inputActions = null;
+        }
+    }
+
+    void Update()
+    {
+        if (navigateCooldown > 0f) navigateCooldown -= Time.deltaTime;
+        if (submitCooldown > 0f) submitCooldown -= Time.deltaTime;
+    }
 
     private void OnNavigate(InputAction.CallbackContext ctx)
     {
         if (state != MenuState.SelectingSlot) return;
+        if (navigateCooldown > 0f) return;
 
-        float y = ctx.ReadValue<Vector2>().y; //Vertical per suportar navegació vertical (ex: joystick)
-        if (y > 0.5f) SetFocus(0); //amunt → slot 0
-        else if (y < -0.5f) SetFocus(1); //avall → slot 1
-
+        float y = ctx.ReadValue<Vector2>().y;
+        if (y > 0.5f) { SetFocus(focusedSlot - 1); navigateCooldown = navigateCooldownTime; }
+        else if (y < -0.5f) { SetFocus(focusedSlot + 1); navigateCooldown = navigateCooldownTime; }
     }
 
     private void OnSubmit(InputAction.CallbackContext ctx)
     {
         if (state != MenuState.SelectingSlot) return;
+        if (submitCooldown > 0f) return;
+
+        submitCooldown = submitCooldownTime;
+
+        if (focusedSlot == slotCards.Length)
+        {
+            mainMenuController?.ShowMain();
+            return;
+        }
 
         if (SaveManager.Instance.HasSaveSlot(focusedSlot))
             OpenSlotSubmenu(focusedSlot);
@@ -72,52 +109,63 @@ public class SlotSelectMenu : MonoBehaviour
 
     private void OnCancel(InputAction.CallbackContext ctx)
     {
-        if (state == MenuState.SelectingSlot) return;
-        CloseDialogAndReturn();
+        if (state != MenuState.SelectingSlot)
+            CloseDialogAndReturn();
     }
-
-    // ── Submenu slot ple ──────────────────────────────────────────────────────
 
     private void OpenSlotSubmenu(int slot)
     {
         state = MenuState.SlotSubmenu;
+        submitAction.performed -= OnSubmit;
+        navigateAction.performed -= OnNavigate;
+
         SaveManager.Instance.SetActiveSlot(slot);
         confirmDialog.Show(
             $"Partida {slot + 1}",
             confirmText: "Jugar",
             cancelText: "Eliminar",
             onConfirm: () => LoadAndEnterGame(slot),
-            onCancel: () => RequestDeleteSlot(slot), // ← botó Eliminar
-            onBack: CloseDialogAndReturn            // ← botó B/Cercle sempre torna enrere
+            onCancel: () => RequestDeleteSlot(slot),
+            onBack: () => { ResubscribeActions(); CloseDialogAndReturn(); }
         );
     }
-
-    // ── Confirmar nova partida ────────────────────────────────────────────────
 
     private void OpenConfirmNewGame(int slot)
     {
         state = MenuState.ConfirmNewGame;
+        submitAction.performed -= OnSubmit;
+        navigateAction.performed -= OnNavigate;
+
         confirmDialog.Show(
             "Vols començar una nova aventura?",
             confirmText: "Sí",
             cancelText: "No",
             onConfirm: () => NewGameAndEnter(slot),
-            onCancel: CloseDialogAndReturn
+            onCancel: () => { ResubscribeActions(); CloseDialogAndReturn(); }
         );
     }
-
-    // ── Confirmar eliminar ────────────────────────────────────────────────────
 
     public void RequestDeleteSlot(int slot)
     {
         state = MenuState.ConfirmDelete;
+        submitAction.performed -= OnSubmit;
+        navigateAction.performed -= OnNavigate;
+
         confirmDialog.Show(
             $"Eliminar la partida {slot + 1}?",
             confirmText: "Sí, eliminar",
             cancelText: "No, tornar",
             onConfirm: () => ConfirmDelete(slot),
-            onCancel: CloseDialogAndReturn
+            onCancel: () => { ResubscribeActions(); CloseDialogAndReturn(); }
         );
+    }
+
+    private void ResubscribeActions()
+    {
+        navigateAction.performed -= OnNavigate;
+        submitAction.performed -= OnSubmit;
+        navigateAction.performed += OnNavigate;
+        submitAction.performed += OnSubmit;
     }
 
     private void ConfirmDelete(int slot)
@@ -127,13 +175,11 @@ public class SlotSelectMenu : MonoBehaviour
         RefreshCards();
     }
 
-    // ── Navegació i escena ────────────────────────────────────────────────────
-
     private void LoadAndEnterGame(int slot)
     {
         confirmDialog.Hide();
         SaveManager.Instance.SetActiveSlot(slot);
-        SaveManager.Instance.Load(); 
+        SaveManager.Instance.Load();
         SceneManager.sceneLoaded += OnGameSceneLoaded;
         SceneManager.LoadScene(gameSceneName);
     }
@@ -161,9 +207,15 @@ public class SlotSelectMenu : MonoBehaviour
 
     private void SetFocus(int slot)
     {
-        focusedSlot = slot;
+        int maxIndex = slotCards.Length;
+        focusedSlot = Mathf.Clamp(slot, 0, maxIndex);
+
         for (int i = 0; i < slotCards.Length; i++)
             slotCards[i].SetFocused(i == focusedSlot);
+
+        Transform border = backButton?.transform.Find("FocusBorder");
+        if (border != null)
+            border.gameObject.SetActive(focusedSlot == slotCards.Length);
     }
 
     private void RefreshCards()
