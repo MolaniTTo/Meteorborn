@@ -119,7 +119,7 @@ public class LockOnSystem : MonoBehaviour
 
         // ── Actualitza el reticle visual ──────────────────────────────────────
         if (lockOnReticle != null)
-            lockOnReticle.transform.position = lockedTarget.position + Vector3.up * 2.5f;
+            lockOnReticle.transform.position = lockedTarget.position + Vector3.up * 3.5f;
     }
 
 

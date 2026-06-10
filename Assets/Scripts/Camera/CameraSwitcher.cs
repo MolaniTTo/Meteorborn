@@ -228,6 +228,7 @@ public class CameraSwitcher : MonoBehaviour
     }
     private void StartExitDrone()
     {
+        droneEnterAudio.Stop();
         if (droneHUD != null) droneHUD.HideCompletely();
 
         if (snapDetector != null)

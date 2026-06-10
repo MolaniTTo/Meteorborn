@@ -18,11 +18,15 @@ public class PesaInteractable : MonoBehaviour
     {
         PlataformaActual = null;
         State = PesaState.Suelo;
+        UniqueID uid = GetComponent<UniqueID>();
+        if (uid != null) { WorldManager.Instance?.RegisterMovedObject(uid.ID, transform.position, transform.rotation); }
     }
     // Crida aquesta quan la pesa s'assigna a una plataforma
     public void OnPlacedOnPlataforma(PlataformaBalanca plataforma)
     {
         PlataformaActual = plataforma;
         State = PesaState.EnPlataforma;
+        UniqueID uid = GetComponent<UniqueID>();
+        if (uid != null) { WorldManager.Instance?.RegisterMovedObject(uid.ID, transform.position, transform.rotation); }
     }
 }

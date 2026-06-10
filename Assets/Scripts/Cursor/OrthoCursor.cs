@@ -66,7 +66,6 @@ public class OrthoCursor : MonoBehaviour
     {
         if (moveInput.sqrMagnitude < 0.01f) return;
 
-        // Calculem la nova posicio de pantalla candidata
         Vector3 candidateScreenPos = currentScreenPos;
         candidateScreenPos.x += moveInput.x * cursorScreenSpeed * Time.deltaTime;
         candidateScreenPos.y += moveInput.y * cursorScreenSpeed * Time.deltaTime;
@@ -78,23 +77,31 @@ public class OrthoCursor : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, geometryMask))
         {
-            Vector3 candidatePosition = hit.point;
-
-            if (NavMesh.SamplePosition(candidatePosition, out NavMeshHit navHit, navMeshSampleRadius, NavMesh.AllAreas))
+            // Primer intent normal
+            if (NavMesh.SamplePosition(hit.point, out NavMeshHit navHit, navMeshSampleRadius, NavMesh.AllAreas))
             {
                 transform.position = navHit.position;
-                currentMode = CursorMode.NavMesh;
+                currentScreenPos = candidateScreenPos;
             }
+            // Segon intent: radi molt gran per sòls molt irregulars
+            else if (NavMesh.SamplePosition(hit.point, out NavMeshHit navHit2, 5f, NavMesh.AllAreas))
+            {
+                transform.position = navHit2.position;
+                currentScreenPos = candidateScreenPos;
+            }
+            // Tercer intent: raycast cap avall des de dalt per ignorar geometria elevada
             else
             {
-                transform.position = candidatePosition;
-                currentMode = CursorMode.Free;
+                Vector3 above = new Vector3(hit.point.x, hit.point.y + 10f, hit.point.z);
+                if (NavMesh.SamplePosition(above, out NavMeshHit navHit3, 15f, NavMesh.AllAreas))
+                {
+                    transform.position = navHit3.position;
+                    currentScreenPos = candidateScreenPos;
+                }
             }
-
-            // Només actualitzem currentScreenPos si hem trobat geometria valida
-            currentScreenPos = candidateScreenPos;
         }
-        // Si no hi ha geometria, currentScreenPos no s'actualitza i el cursor no es mou
+
+        currentMode = CursorMode.NavMesh;
     }
 
     private void UpdateVisuals()

@@ -42,14 +42,20 @@ public class TutorialInicial : MonoBehaviour
     [SerializeField] private TutorialEntry cursorHoldEntry;
     [SerializeField] private TutorialEntry tutorialEndEntry;
 
+
     private InputSystem_Actions inputActions;
     private Vector3 _droneStartPos;
+
+    [SerializeField] private GameObject HUDPlayer;
+    [SerializeField] private GameObject droneHUDTutorialPanel;
+
 
     void Awake()
     {
         if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
         inputActions = new InputSystem_Actions();
+        if (HUDPlayer != null) HUDPlayer.SetActive(false); // aseguramos que el HUD del jugador empieza desactivado, se activará al completar el tutorial o si ya se completó en otra run
     }
 
     void OnEnable() => inputActions.Player.Enable();
@@ -71,6 +77,9 @@ public class TutorialInicial : MonoBehaviour
 
         if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialCompleted())
         {
+            HUDPlayer.SetActive(true); // activa el HUD del jugador si el tutorial ya se completó en otra run
+            if (droneHUDTutorialPanel != null) droneHUDTutorialPanel.SetActive(false);
+            AudioManager.Instance?.PlayMusic("Base");
             Debug.Log("[TutorialInicial] Tutorial ja completat, desbloquejant tot.");
             player.canMove = true;
             player.canUseDrone = true;
@@ -208,6 +217,7 @@ public class TutorialInicial : MonoBehaviour
 
     private IEnumerator RunTutorial()
     {
+        AudioManager.Instance?.PlayMusic("StartSequence");
         if (visionDetector != null) visionDetector.tutorialActive = true;
         player.canMove = false;
         player.canUseDrone = false;
@@ -306,6 +316,7 @@ public class TutorialInicial : MonoBehaviour
 
     public void UnlockAll()
     {
+        AudioManager.Instance?.PlayMusic("Base");
         player.canMove = true;
         player.canUseDrone = true;
         player.canUseOrtho = true;
@@ -317,6 +328,8 @@ public class TutorialInicial : MonoBehaviour
         droneMovement?.UnfreezeFromTutorialPosition();
         if (visionDetector != null) visionDetector.tutorialActive = false;
         isTutorialCompleted = true;
+        HUDPlayer.SetActive(true);
+        if (droneHUDTutorialPanel != null) droneHUDTutorialPanel.SetActive(false);
     }
 
     private IEnumerator UnlockInteractNextFrame()

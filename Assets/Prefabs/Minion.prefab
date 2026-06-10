@@ -1061,7 +1061,7 @@ MonoBehaviour:
   audioSource: {fileID: 4123107908948043909}
   attackClip: {fileID: 0}
   lauchClip: {fileID: 8300000, guid: 9c1f330ded4445a4889d5194d426de6b, type: 3}
-  walkClip: {fileID: 8300000, guid: 9b77454a912d95a409172e021787d081, type: 3}
+  walkClip: {fileID: 0}
   activatedClip: {fileID: 8300000, guid: 5e4af3f267e9318479ec69b8a7c3c219, type: 3}
 --- !u!54 &6404414645493657557
 Rigidbody:

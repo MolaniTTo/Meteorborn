@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 
@@ -13,6 +14,10 @@ public class PlayerParticles : MonoBehaviour
     [SerializeField] private TutorialEntry FirstParticlesPicked; 
 
     private bool firstTimeGettingParticles = true;
+
+    [Header("UI")]
+    [SerializeField] private TMP_Text particlesText;
+
 
 
     void Awake()
@@ -55,8 +60,7 @@ public class PlayerParticles : MonoBehaviour
 
     private void OnParticlesChanged()
     {
-        //Aqui dispararem un event que actualitzi la UI
-        //UIManager.Instance?.UpdateParticleCount(numberOfParticles);
-        Debug.Log($"[Partícules] {numberOfParticles}/{maxParticles}");
+        if (particlesText != null)
+            particlesText.text = $"{numberOfParticles}/{maxParticles}";
     }
 }

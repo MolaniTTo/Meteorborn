@@ -261,7 +261,7 @@ public class DroneHUD : MonoBehaviour
 
         if (snapValue != null)
         {
-            snapValue.text = snapped ? "ALINEAT ✓" : "—";
+            snapValue.text = snapped ? "ALINEADO" : "—";
             snapValue.color = snapped ? snapColor : cyanColor;
         }
 
@@ -269,7 +269,7 @@ public class DroneHUD : MonoBehaviour
             snapLabel.color = snapped ? snapColor : cyanDim;
 
         if (modeText != null)
-            modeText.text = snapped ? "FPV · ALINEAT" : "FPV · DRON";
+            modeText.text = snapped ? "FPV · ALINEADO" : "FPV · DRON";
     }
 
     // ── Flash foto ────────────────────────────────────────────────────────────

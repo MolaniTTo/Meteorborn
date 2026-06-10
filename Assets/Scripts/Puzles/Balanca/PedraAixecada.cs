@@ -13,6 +13,13 @@ public class PedraAixecada : MonoBehaviour
     {
         if (aixecada) return;
         aixecada = true;
-        transform.DOMoveY(alçada, durada).SetEase(ease).SetRelative();
+        transform.DOMoveY(alçada, durada).SetEase(ease).SetRelative()
+       .OnComplete(() =>
+       {
+           UniqueID uid = GetComponent<UniqueID>();
+           if (uid != null) { WorldManager.Instance?.RegisterMovedObject(uid.ID, transform.position, transform.rotation); }
+           SaveManager.Instance?.Save();
+       });
+
     }
 }

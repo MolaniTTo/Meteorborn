@@ -137,8 +137,8 @@ public class SlotSelectMenu : MonoBehaviour
         navigateAction.performed -= OnNavigate;
 
         confirmDialog.Show(
-            "Vols començar una nova aventura?",
-            confirmText: "Sí",
+            "Quieres empezar una nueva aventura?",
+            confirmText: "Si",
             cancelText: "No",
             onConfirm: () => NewGameAndEnter(slot),
             onCancel: () => { ResubscribeActions(); CloseDialogAndReturn(); }
@@ -153,8 +153,8 @@ public class SlotSelectMenu : MonoBehaviour
 
         confirmDialog.Show(
             $"Eliminar la partida {slot + 1}?",
-            confirmText: "Sí, eliminar",
-            cancelText: "No, tornar",
+            confirmText: "Si, eliminar",
+            cancelText: "No, volver",
             onConfirm: () => ConfirmDelete(slot),
             onCancel: () => { ResubscribeActions(); CloseDialogAndReturn(); }
         );

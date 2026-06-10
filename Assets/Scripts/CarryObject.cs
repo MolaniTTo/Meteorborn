@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 /// <summary>
 /// Objecte que els minions poden portar entre tots.
@@ -25,14 +26,33 @@ public class CarryObject : MonoBehaviour
     private bool isBeingCarried = false;
     private bool isDelivered = false;
 
+    [Header("UI")]
+    [SerializeField] private GameObject minionCountPanel;
+    [SerializeField] private TMPro.TMP_Text minionCountText;
+
     [Header("Audio")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip carrySound; //es reprodueix quan l'objecte puja a la posició elevada abans de moure's
+
+    [Header("Blueprint")]
+    [SerializeField] private GameObject blueprintPanel;
+    [SerializeField] private Color blueprintPlacedColor = new Color(0.4f, 0.7f, 0.4f, 0.7f);
+    private enum CarryMode { FollowPlayer, GoToDestination }
+    private CarryMode carryMode = CarryMode.FollowPlayer;
+
+    [Header("Trigger de destí")]
+    [SerializeField] private string destinationTriggerTag = "CarryDestinationZone";
 
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         if (agent != null) agent.enabled = false;
+        UpdateMinionCountUI();
+    }
+    private void UpdateMinionCountUI()
+    {
+        if (minionCountText != null)
+            minionCountText.text = $"{assignedMinions.Count}/{minionsRequired}";
     }
 
     public void AssignMinion(MinionAI minion)
@@ -51,6 +71,7 @@ public class CarryObject : MonoBehaviour
             minion.agent.SetDestination(dest);
             minion.StartCoroutine(WaitAndReady(minion, carryPositions[index]));
         }
+        UpdateMinionCountUI();
     }
 
     private int readyMinions = 0;
@@ -79,41 +100,62 @@ public class CarryObject : MonoBehaviour
     private IEnumerator CarryToDestination()
     {
         isBeingCarried = true;
+        carryMode = CarryMode.FollowPlayer;
+        if (minionCountPanel != null) minionCountPanel.SetActive(false);
 
-        // Elevació abans de moure's
         float floatHeight = 1.5f;
         float floatDuration = 0.8f;
-        Vector3 raisedPos = carryObject.transform.position + Vector3.up * floatHeight;
 
         if (audioSource != null && carrySound != null)
             audioSource.PlayOneShot(carrySound);
+
+        Vector3 originalLocalPos = carryObject.transform.localPosition;
+        Vector3 raisedLocalPos = originalLocalPos + Vector3.up * floatHeight;
+
         bool elevated = false;
-        carryObject.transform.DOMove(raisedPos, floatDuration).SetEase(Ease.OutSine).OnComplete(() => elevated = true);
+        carryObject.transform.DOLocalMove(raisedLocalPos, floatDuration).SetEase(Ease.OutSine)
+            .OnComplete(() => elevated = true);
         yield return new WaitUntil(() => elevated);
 
-        // Ara activem el NavMeshAgent per moure's
-        if (agent != null) { agent.enabled = true; agent.speed = moveSpeed; }
+        bool reset = false;
+        carryObject.transform.DOLocalMove(originalLocalPos, 0.2f)
+            .OnComplete(() => reset = true);
+        yield return new WaitUntil(() => reset);
 
-        Transform playerFollow = GameObject.FindGameObjectWithTag("PlayerCarryingFollow")?.transform;
+        Transform playerFollow = null;
+        while (playerFollow == null)
+        {
+            playerFollow = GameObject.FindGameObjectWithTag("PlayerCarryingFollow")?.transform;
+            yield return null;
+        }
+
+        yield return new WaitUntil(() =>
+            NavMesh.SamplePosition(playerFollow.position, out _, 1f, NavMesh.AllAreas));
+
+        if (agent != null)
+        {
+            NavMeshObstacle obstacle = carryObject.GetComponent<NavMeshObstacle>();
+            if (obstacle != null) obstacle.enabled = false;
+            agent.enabled = true;
+            agent.speed = moveSpeed;
+            agent.autoTraverseOffMeshLink = false;
+            agent.Warp(transform.position);
+        }
 
 
         while (true)
         {
-            // Si ja s'ha alliberat (per MeteoritColocar), sortim
             if (isDelivered) yield break;
 
-            if (destination == null) break;
+            if (agent.isOnOffMeshLink && !traversingCarryLink)
+                StartCoroutine(TraverseCarryLink());
 
-            bool hasLinks = PathHasOffMeshLinks(transform.position, destination.position);
-
-            if (hasLinks && playerFollow != null)
+            if (carryMode == CarryMode.FollowPlayer && playerFollow != null)
             {
-                agent.stoppingDistance = 2f;
-                float distToPlayer = Vector3.Distance(transform.position, playerFollow.position);
-                if (distToPlayer > agent.stoppingDistance)
-                    agent.SetDestination(playerFollow.position);
+                agent.stoppingDistance = 1.5f;
+                agent.SetDestination(playerFollow.position);
             }
-            else
+            else if (carryMode == CarryMode.GoToDestination && destination != null)
             {
                 agent.stoppingDistance = 0.3f;
                 agent.SetDestination(destination.position);
@@ -137,18 +179,32 @@ public class CarryObject : MonoBehaviour
 
             yield return null;
         }
-
     }
 
-    private bool PathHasOffMeshLinks(Vector3 from, Vector3 to)
+    private bool traversingCarryLink = false;
+
+    private IEnumerator TraverseCarryLink()
     {
-        // Si hay un raycast directo de NavMesh sin interrupciones, no hay links
-        if (NavMesh.Raycast(from, to, out NavMeshHit hit, NavMesh.AllAreas))
+        traversingCarryLink = true;
+        float originalSpeed = agent.speed;
+        OffMeshLinkData data = agent.currentOffMeshLinkData;
+        float realDistance = Vector3.Distance(data.startPos, data.endPos);
+        float requiredSpeed = realDistance / (2f / agent.speed);
+        agent.speed = requiredSpeed;
+        agent.autoTraverseOffMeshLink = true;
+        while (agent.isOnOffMeshLink) yield return null;
+        agent.velocity = Vector3.zero;
+        agent.speed = originalSpeed;
+        agent.autoTraverseOffMeshLink = false;
+        traversingCarryLink = false;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag(destinationTriggerTag) && isBeingCarried)
         {
-            // El raycast fue bloqueado → hay un hueco en el NavMesh → necesita link
-            return true;
+            carryMode = CarryMode.GoToDestination;
         }
-        return false;
     }
 
     public void OnDelivered()
@@ -175,6 +231,29 @@ public class CarryObject : MonoBehaviour
             MinionManager.Instance?.RegisterActive(minion);
         }
         assignedMinions.Clear();
+    }
+
+    public void ActivateBlueprint()
+    {
+        if (blueprintPanel == null) return;
+        Image img = blueprintPanel.GetComponent<Image>();
+        if (img == null) img = blueprintPanel.GetComponentInChildren<Image>();
+        if (img != null) img.color = blueprintPlacedColor;
+    }
+
+    private bool AllMinionsReady()
+    {
+        for (int i = 0; i < assignedMinions.Count; i++)
+        {
+            if (assignedMinions[i] == null) continue;
+            if (i >= carryPositions.Length) continue;
+
+            Vector3 mPos = assignedMinions[i].transform.position; mPos.y = 0f;
+            Vector3 sPos = carryPositions[i].position; sPos.y = 0f;
+
+            if (Vector3.Distance(mPos, sPos) > 2f) return false;
+        }
+        return true;
     }
 
     public bool IsDelivered => isDelivered;
