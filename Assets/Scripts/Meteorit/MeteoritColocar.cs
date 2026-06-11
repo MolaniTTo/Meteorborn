@@ -1,4 +1,5 @@
 using DG.Tweening;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -17,6 +18,15 @@ public class MeteoritColocar : MonoBehaviour
     [SerializeField] private TutorialEntry lastPiecePlacedTutorial;
     [SerializeField] private BlueprintMeteorit blueprintMeteorit;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource droneEnterAudio;
+    [SerializeField] private AudioClip colocarPeça;
+
+    [Header("Final")]
+    [SerializeField] private ScreenFade screenFade;
+    [SerializeField] private string nextScene = "MainMenu";
+    [SerializeField] private float waitBeforeFade = 0.5f;
+
     private void OnTriggerEnter(Collider other)
     {
         // Detecta si és un CarryObject
@@ -24,11 +34,11 @@ public class MeteoritColocar : MonoBehaviour
         if (carry == null) return;
 
         // Busca quin objecte de la llista coincideix
-        for (int i = 0; i < objectes.Length; i++)
+       for (int i = 0; i < objectes.Length; i++)
         {
             if (objectes[i] == other.transform && i < posicions.Length)
             {
-                blueprintMeteorit.ChangeColor(new Color(0.4f,0.7f,0.4f,0.7f), i);
+                //blueprintMeteorit.ChangeColor(new Color(0.4f,0.7f,0.4f,0.7f), i);
                 ColocarPeça(carry, objectes[i], posicions[i]);
                 break;
             }
@@ -58,20 +68,37 @@ public class MeteoritColocar : MonoBehaviour
             carry.carryObject.transform.DOLocalRotate(Vector3.zero, placeDuration * 0.5f).SetEase(Ease.OutSine);
         }
 
+        if (droneEnterAudio != null && colocarPeça != null)
+            droneEnterAudio.PlayOneShot(colocarPeça);
+
         objecte.DOMove(posicio.position, placeDuration).SetEase(placeEase)
             .OnComplete(() =>
             {
                 carry.OnDelivered();
+                carry.ActivateBlueprint();
                 piecesPlaced++;
-                Debug.Log($"[MeteoritColocar] Peça '{objecte.name}' col·locada. ({piecesPlaced}/{objectes.Length})");
-
                 if (piecesPlaced >= objectes.Length)
                 {
                     TutorialManager.Instance?.TriggerIfNew("hasPlacedAllPieces", () =>
                         DroneSpeaker.Instance?.Speak(lastPiecePlacedTutorial));
+                    StartCoroutine(WaitAndLoadScene());
                 }
             });
-
         objecte.DORotateQuaternion(posicio.rotation, placeDuration).SetEase(placeEase);
+
+    }
+
+    private IEnumerator WaitAndLoadScene()
+    {
+        yield return new WaitForSeconds(waitBeforeFade);
+        yield return new WaitUntil(() => DroneSpeaker.Instance == null || !DroneSpeaker.Instance.IsSpeaking);
+
+        if (screenFade != null)
+        {
+            screenFade.FadeOut();
+            yield return new WaitForSeconds(screenFade.fadeDuration);
+        }
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene(nextScene);
     }
 }

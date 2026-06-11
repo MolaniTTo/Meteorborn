@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using TMPro;
 
 /// <summary>
 /// Controla la UI d'una targeta de slot individual.
@@ -53,9 +54,9 @@ public class SlotCardUI : MonoBehaviour
         if (hasSave)
         {
             txtSlotTitle.text = $"Partida {slot + 1}";
-            txtLastSaved.text = $"Guardat: {preview.lastSaved}";
-            txtParticles.text = $"Partícules: {preview.particles}";
-            txtTutorial.text = preview.tutorialDone ? "Tutorial ✓" : "Tutorial pendent";
+            txtLastSaved.text = $"Guardado: {preview.lastSaved}";
+            txtParticles.text = $"Particulas: {preview.particles}";
+            txtTutorial.text = preview.tutorialDone ? "Tutorial completado" : "Tutorial pendiente";
         }
 
     }

@@ -78,11 +78,18 @@ public class PlayerStateMachine : MonoBehaviour
     [HideInInspector] public bool canUseCursor = false;
     [HideInInspector] public bool canMoveOrthoCursor = false;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource playerAudioSource;
+    [SerializeField] private AudioClip footstepClip;
+    [SerializeField] private CameraSwitcher cameraSwitcher;
+
+
     public bool IsMoving => agent.velocity.sqrMagnitude > 0.1f;
     public bool HasLookInput { get; private set; } = false;
 
     void Awake()
     {
+        System.GC.Collect();
         inputActions = new InputSystem_Actions();
         moveAction = inputActions.Player.Move;
         lookAction = inputActions.Player.Look;
@@ -146,6 +153,8 @@ public class PlayerStateMachine : MonoBehaviour
 
         if (playerViewMode != PlayerViewMode.OrthographicView) return;
         if (traversingLink) return;
+
+        cameraSwitcher?.PlayClickCursor();
 
         switch (orthoCursor.CurrentMode)
         {
@@ -232,6 +241,7 @@ public class PlayerStateMachine : MonoBehaviour
             StartCoroutine(TraverseLink());
 
         UpdateAnimator();
+        UpdateFootsteps();
 
         if (minionCursor != null && minionCursor.IsActive)
         {
@@ -462,6 +472,23 @@ public class PlayerStateMachine : MonoBehaviour
                 transform.rotation,
                 Quaternion.LookRotation(dir),
                 rotationSpeed * Time.deltaTime);
+    }
+
+    private void UpdateFootsteps()
+    {
+        bool isWalking = agent.velocity.sqrMagnitude > 0.1f &&
+                         playerViewMode == PlayerViewMode.ThirdPerson;
+
+        if (isWalking && !playerAudioSource.isPlaying)
+        {
+            playerAudioSource.clip = footstepClip;
+            playerAudioSource.loop = true;
+            playerAudioSource.Play();
+        }
+        else if (!isWalking && playerAudioSource.isPlaying)
+        {
+            playerAudioSource.Stop();
+        }
     }
 
 

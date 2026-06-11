@@ -58,6 +58,13 @@ public class CameraSwitcher : MonoBehaviour
     [Header("HUD")]
     [SerializeField] private DroneHUD droneHUD;
 
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource droneEnterAudio;
+    [SerializeField] private AudioClip flatten;
+    [SerializeField] private AudioClip loopHelices;
+    [SerializeField] private AudioClip clickCursor;
+
     //Input
     private InputSystem_Actions inputActions;
 
@@ -221,6 +228,7 @@ public class CameraSwitcher : MonoBehaviour
     }
     private void StartExitDrone()
     {
+        droneEnterAudio.Stop();
         if (droneHUD != null) droneHUD.HideCompletely();
 
         if (snapDetector != null)
@@ -244,6 +252,9 @@ public class CameraSwitcher : MonoBehaviour
     {
         if (!playerStateMachine.canUseOrtho) return;
         //if (droneHUD != null) droneHUD.Hide();
+
+        droneEnterAudio.Stop();
+        droneEnterAudio.PlayOneShot(flatten);
 
         // Determinem la rotació final — snappejada si hi ha snap, la del dron si no
         Quaternion finalRotation = snapDetector != null && snapDetector.HasSnap
@@ -306,6 +317,7 @@ public class CameraSwitcher : MonoBehaviour
 
     private void StartReturnToDrone()
     {
+        droneEnterAudio.PlayOneShot(flatten);
         if (droneHUD != null) droneHUD.ResumeFromOrtho();
 
         droneMovement.transform.position = _dronePositionBeforeFlatten;
@@ -542,6 +554,7 @@ public class CameraSwitcher : MonoBehaviour
 
             case TransitionState.DroneActive:
                 HandleDroneMovement();
+                UpdateDroneAudio();
                 break;
 
             case TransitionState.ExitingDrone:
@@ -629,5 +642,28 @@ public class CameraSwitcher : MonoBehaviour
 
             GameManager.instance.EvaluateConditions();
         }
+    }
+
+    private bool droneAudioPlayed = false;
+
+    private void UpdateDroneAudio()
+    {
+        bool isDroneActive = transitionState == TransitionState.DroneActive;
+
+        if (isDroneActive && !droneEnterAudio.isPlaying)
+        {
+            droneEnterAudio.clip = loopHelices;
+            droneEnterAudio.loop = true;
+            droneEnterAudio.Play();
+        }
+        else if (!isDroneActive && droneEnterAudio.loop && droneEnterAudio.isPlaying)
+        {
+            droneEnterAudio.Stop();
+        }
+    }
+
+    public void PlayClickCursor()
+    {
+        droneEnterAudio.PlayOneShot(clickCursor);
     }
 }
